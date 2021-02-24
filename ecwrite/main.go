@@ -1,7 +1,7 @@
 // Write to EC register
 // Might need 'modprobe ec_sys write_support=1'
 // Values must be Hex
-// Example ecwrite e3 ff
+// Example: ecwrite e3 ff
 package main
 
 import (
