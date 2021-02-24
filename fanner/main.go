@@ -5,26 +5,32 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"os"
 )
 
 const ec = "/sys/kernel/debug/ec/ec0/io"
-const register = 0xE3
 
 func main() {
-	var arg string
-	if arg = os.Args[1]; len(os.Args) < 2 && arg != "on" && arg != "off" {
-		fmt.Fprintln(os.Stderr, "Options are 'on' or 'off'")
-		return
+	if len(os.Args) < 2 {
+		fmt.Fprintln(os.Stderr, "Options are 'on', 'off' or 'blast'")
+		os.Exit(1)
 	}
 	fd, err := os.OpenFile(ec, os.O_RDWR, 0600)
 	if err != nil {
-		log.Fatal(err)
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
 	}
-	if arg == "on" {
-		fd.WriteAt([]byte{byte(255)}, register)
-	} else {
-		fd.WriteAt([]byte{byte(0)}, register)
+	switch os.Args[1] {
+	case "on":
+		fd.WriteAt([]byte{byte(255)}, 0xE3)
+		fd.WriteAt([]byte{0x8}, 0xed)
+	case "off":
+		fd.WriteAt([]byte{byte(0)}, 0xE3)
+	case "blast":
+		fd.WriteAt([]byte{byte(255)}, 0xE3)
+		fd.WriteAt([]byte{0x12}, 0xed)
+	default:
+		fmt.Fprintln(os.Stderr, "Options are 'on', 'off' or 'blast'")
+		os.Exit(1)
 	}
 }
