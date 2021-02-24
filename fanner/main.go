@@ -12,8 +12,7 @@ const ec = "/sys/kernel/debug/ec/ec0/io"
 
 func main() {
 	if len(os.Args) < 2 {
-		fmt.Fprintln(os.Stderr, "Options are 'on', 'off' or 'blast'")
-		os.Exit(1)
+		usage()
 	}
 	fd, err := os.OpenFile(ec, os.O_RDWR, 0600)
 	if err != nil {
@@ -30,7 +29,11 @@ func main() {
 		fd.WriteAt([]byte{byte(255)}, 0xE3)
 		fd.WriteAt([]byte{0x12}, 0xED)
 	default:
-		fmt.Fprintln(os.Stderr, "Options are 'on', 'off' or 'blast'")
-		os.Exit(1)
+		usage()
 	}
+}
+
+func usage() {
+	fmt.Fprintln(os.Stderr, "Options are 'on', 'off' or 'blast'")
+	os.Exit(1)
 }
