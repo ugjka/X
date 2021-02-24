@@ -23,12 +23,12 @@ func main() {
 	switch os.Args[1] {
 	case "on":
 		fd.WriteAt([]byte{byte(255)}, 0xE3)
-		fd.WriteAt([]byte{0x8}, 0xed)
+		fd.WriteAt([]byte{0x8}, 0xED)
 	case "off":
 		fd.WriteAt([]byte{byte(0)}, 0xE3)
 	case "blast":
 		fd.WriteAt([]byte{byte(255)}, 0xE3)
-		fd.WriteAt([]byte{0x12}, 0xed)
+		fd.WriteAt([]byte{0x12}, 0xED)
 	default:
 		fmt.Fprintln(os.Stderr, "Options are 'on', 'off' or 'blast'")
 		os.Exit(1)
