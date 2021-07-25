@@ -20,7 +20,7 @@ func main() {
 			total = lines
 		})
 		if lines < total {
-			exec.Command("systemctl", "suspend").Run()
+			exec.Command("systemctl", "suspend", "-i").Run()
 			return
 		}
 		time.Sleep(time.Second * 5)
