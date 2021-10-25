@@ -1,6 +1,7 @@
 // For Toshiba SATELLITE L850-1LK
 // Toggle on and off active cooling
 // Might need 'modprobe ec_sys write_support=1'
+// Yeet
 package main
 
 import (
