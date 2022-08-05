@@ -7,6 +7,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"os/exec"
 )
 
 const ec = "/sys/kernel/debug/ec/ec0/io"
@@ -15,6 +16,7 @@ func main() {
 	if len(os.Args) < 2 {
 		usage()
 	}
+	exec.Command("modprobe", "ec_sys", "write_support").Run()
 	fd, err := os.OpenFile(ec, os.O_RDWR, 0600)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
