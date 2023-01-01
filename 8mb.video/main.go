@@ -8,7 +8,9 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"os/signal"
 	"strconv"
+	"strings"
 )
 
 // in kilobits per second
@@ -41,13 +43,15 @@ func main() {
 	bitfloat := *size * 1024.0 * 8.0 / seconds
 	// video bitrate
 	bitrate := int(bitfloat) - AUDIO_BITRATE
-
+	arr := strings.Split(file, ".")
+	output := strings.Join(arr[0:len(arr)-1], ".")
+	output = "8mb." + output + ".mp4"
 	pass1 := exec.Command("ffmpeg", "-y", "-i", file, "-c:v", "libx264", "-preset", *preset,
-		"-b:v", fmt.Sprintf("%dk", bitrate), "-pass", "1", "-passlogfile", "fflogfile",
+		"-b:v", fmt.Sprintf("%dk", bitrate), "-pass", "1", "-passlogfile", file,
 		"-c:a", "aac", "-b:a", fmt.Sprintf("%dk", AUDIO_BITRATE), "-f", "mp4", "/dev/null")
 	pass2 := exec.Command("ffmpeg", "-y", "-i", file, "-c:v", "libx264", "-preset", *preset,
-		"-b:v", fmt.Sprintf("%dk", bitrate), "-pass", "2", "-passlogfile", "fflogfile",
-		"-c:a", "aac", "-b:a", fmt.Sprintf("%dk", AUDIO_BITRATE), "8mb."+file)
+		"-b:v", fmt.Sprintf("%dk", bitrate), "-pass", "2", "-passlogfile", file,
+		"-c:a", "aac", "-b:a", fmt.Sprintf("%dk", AUDIO_BITRATE), output)
 
 	pass1.Stderr = os.Stderr
 	pass1.Stdout = os.Stdout
@@ -55,9 +59,24 @@ func main() {
 	pass2.Stdout = os.Stdout
 
 	cleanup := func() {
-		os.Remove("fflogfile-0.log")
-		os.Remove("fflogfile-0.log.mbtree")
+		os.Remove(file + "-0.log")
+		os.Remove(file + "-0.log.mbtree")
+		os.Remove(file + "-0.log.temp")
+		os.Remove(file + "-0.log.mbtree.temp")
 	}
+
+	sig := make(chan os.Signal, 1)
+	signal.Notify(sig, os.Interrupt)
+	go func() {
+		<-sig
+		if pass1.Process != nil {
+			pass1.Process.Kill()
+		}
+		if pass2.Process != nil {
+			pass2.Process.Kill()
+		}
+		cleanup()
+	}()
 
 	err = pass1.Run()
 	if err != nil {
