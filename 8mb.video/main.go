@@ -43,9 +43,12 @@ func main() {
 	bitfloat := *size * 1024.0 * 8.0 / seconds
 	// video bitrate
 	bitrate := int(bitfloat) - AUDIO_BITRATE
+
+	// construct output filename
 	arr := strings.Split(file, ".")
 	output := strings.Join(arr[0:len(arr)-1], ".")
 	output = "8mb." + output + ".mp4"
+
 	pass1 := exec.Command("ffmpeg", "-y", "-i", file, "-c:v", "libx264", "-preset", *preset,
 		"-b:v", fmt.Sprintf("%dk", bitrate), "-pass", "1", "-passlogfile", file,
 		"-c:a", "aac", "-b:a", fmt.Sprintf("%dk", AUDIO_BITRATE), "-f", "mp4", "/dev/null")
