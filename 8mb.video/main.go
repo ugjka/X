@@ -15,7 +15,7 @@ import (
 const AUDIO_BITRATE = 96
 
 func main() {
-	targetsize := flag.Float64("size", 8, "target size in MB")
+	size := flag.Float64("size", 8, "target size in MB")
 	preset := flag.String("preset", "slow", "h264 encode preset")
 	flag.Parse()
 	if len(flag.Args()) == 0 {
@@ -38,7 +38,7 @@ func main() {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
-	bitfloat := *targetsize * 1024.0 * 8.0 / seconds
+	bitfloat := *size * 1024.0 * 8.0 / seconds
 	// video bitrate
 	bitrate := int(bitfloat) - AUDIO_BITRATE
 
