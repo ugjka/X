@@ -1,3 +1,5 @@
+// Fit a video into a 8mb file (Discord nitro pls?)
+// Needs ffmpeg ffprobe
 package main
 
 import (
