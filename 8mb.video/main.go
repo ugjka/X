@@ -15,11 +15,9 @@ import (
 // in kilobits per second
 const AUDIO_BITRATE = 96
 
-// h264 encode preset
-const PRESET = "slow"
-
 func main() {
 	size := flag.Float64("size", 8, "target size in MB")
+	preset := flag.String("preset", "slow", "h264 encode preset")
 	flag.Parse()
 	if len(flag.Args()) == 0 {
 		fmt.Fprintln(os.Stderr, "error: no filename given")
@@ -43,9 +41,9 @@ func main() {
 	// video bitrate
 	bitrate := int(bitfloat) - AUDIO_BITRATE
 
-	pass1 := exec.Command("ffmpeg", "-y", "-i", file, "-c:v", "libx264", "-preset", PRESET,
+	pass1 := exec.Command("ffmpeg", "-y", "-i", file, "-c:v", "libx264", "-preset", *preset,
 		"-b:v", fmt.Sprintf("%dk", bitrate), "-pass", "1", "-passlogfile", "fflogfile", "-c:a", "aac", "-b:a", fmt.Sprintf("%dk", AUDIO_BITRATE), "-f", "mp4", "/dev/null")
-	pass2 := exec.Command("ffmpeg", "-y", "-i", file, "-c:v", "libx264", "-preset", PRESET,
+	pass2 := exec.Command("ffmpeg", "-y", "-i", file, "-c:v", "libx264", "-preset", *preset,
 		"-b:v", fmt.Sprintf("%dk", bitrate), "-pass", "2", "-passlogfile", "fflogfile", "-c:a", "aac", "-b:a", fmt.Sprintf("%dk", AUDIO_BITRATE), "8mb."+file)
 
 	pass1.Stderr = os.Stderr
