@@ -6,7 +6,6 @@ import (
 	"bytes"
 	"flag"
 	"fmt"
-	"log"
 	"os"
 	"os/exec"
 	"strconv"
@@ -16,7 +15,7 @@ import (
 const AUDIO_BITRATE = 96
 
 func main() {
-	size := flag.Float64("size", 8, "target size in MB")
+	targetsize := flag.Float64("size", 8, "target size in MB")
 	preset := flag.String("preset", "slow", "h264 encode preset")
 	flag.Parse()
 	if len(flag.Args()) == 0 {
@@ -30,14 +29,16 @@ func main() {
 		"csv=p=0")
 	secbytes, err := probe.Output()
 	if err != nil {
-		log.Fatal(err)
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
 	}
 	secbytes = bytes.TrimSpace(secbytes)
-	sec, err := strconv.ParseFloat(string(secbytes), 64)
+	seconds, err := strconv.ParseFloat(string(secbytes), 64)
 	if err != nil {
-		log.Fatal(err)
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
 	}
-	bitfloat := *size * 1024.0 * 8.0 / sec
+	bitfloat := *targetsize * 1024.0 * 8.0 / seconds
 	// video bitrate
 	bitrate := int(bitfloat) - AUDIO_BITRATE
 
@@ -51,15 +52,22 @@ func main() {
 	pass2.Stderr = os.Stderr
 	pass2.Stdout = os.Stdout
 
-	defer os.Remove("fflogfile-0.log")
-	defer os.Remove("fflogfile-0.log.mbtree")
+	cleanup := func() {
+		os.Remove("fflogfile-0.log")
+		os.Remove("fflogfile-0.log.mbtree")
+	}
 
 	err = pass1.Run()
 	if err != nil {
-		log.Fatal(err)
+		cleanup()
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
 	}
 	err = pass2.Run()
 	if err != nil {
-		log.Fatal(err)
+		cleanup()
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
 	}
+	cleanup()
 }
