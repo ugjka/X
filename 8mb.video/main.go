@@ -48,7 +48,7 @@ func main() {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
-
+	// -0.1mb because it sometimes overshoots
 	bitfloat := (*size - 0.1) * 1024.0 * 8.0 / seconds
 	//audio bitrate
 	bitratea := 64
