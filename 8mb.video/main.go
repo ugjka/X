@@ -51,14 +51,14 @@ func main() {
 	// -0.1mb because it sometimes overshoots
 	bitfloat := (*size - 0.1) * 1024.0 * 8.0 / seconds
 	//audio bitrate
-	bitratea := 64
+	abitrate := 64
 	audioch := 1
 	if *music {
-		bitratea *= 2
+		abitrate *= 2
 		audioch *= 2
 	}
 	// video bitrate
-	bitratev := int(bitfloat) - bitratea
+	vbitrate := int(bitfloat) - abitrate
 
 	// construct output filename
 	arr := strings.Split(file, ".")
@@ -67,11 +67,11 @@ func main() {
 	vfopt := fmt.Sprintf("scale=iw/%f:ih/%f", *down, *down)
 
 	pass1 := exec.Command("ffmpeg", "-y", "-i", file, "-vf", vfopt, "-c:v", "libx264", "-preset", *preset,
-		"-b:v", fmt.Sprintf("%dk", bitratev), "-pass", "1", "-passlogfile", file,
+		"-b:v", fmt.Sprintf("%dk", vbitrate), "-pass", "1", "-passlogfile", file,
 		"-an", "-f", "null", "/dev/null")
 	pass2 := exec.Command("ffmpeg", "-y", "-i", file, "-vf", vfopt, "-c:v", "libx264", "-preset", *preset,
-		"-b:v", fmt.Sprintf("%dk", bitratev), "-pass", "2", "-passlogfile", file,
-		"-ac", fmt.Sprintf("%d", audioch), "-c:a", "aac", "-b:a", fmt.Sprintf("%dk", bitratea), output)
+		"-b:v", fmt.Sprintf("%dk", vbitrate), "-pass", "2", "-passlogfile", file,
+		"-ac", fmt.Sprintf("%d", audioch), "-c:a", "aac", "-b:a", fmt.Sprintf("%dk", abitrate), output)
 
 	pass1.Stderr = os.Stderr
 	pass1.Stdout = os.Stdout
