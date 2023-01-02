@@ -14,7 +14,8 @@ import (
 )
 
 // in kilobits per second
-const AUDIO_BITRATE = 96
+// later in code we specify mp3 encoder because ffmpeg's aac encoder sucks
+const AUDIO_BITRATE = 48
 
 func main() {
 	size := flag.Float64("size", 8, "target size in MB")
@@ -50,11 +51,11 @@ func main() {
 	output = "8mb." + output + ".mp4"
 
 	pass1 := exec.Command("ffmpeg", "-y", "-i", file, "-c:v", "libx264", "-preset", *preset,
-		"-b:v", fmt.Sprintf("%dk", bitrate), "-pass", "1", "-passlogfile", file,
-		"-c:a", "aac", "-b:a", fmt.Sprintf("%dk", AUDIO_BITRATE), "-f", "mp4", "/dev/null")
+		"-b:v", fmt.Sprintf("%dk", bitrate), "-pass", "1", "-passlogfile", file, "-ac", "1", "-ar", "32000",
+		"-c:a", "libmp3lame", "-b:a", fmt.Sprintf("%dk", AUDIO_BITRATE), "-f", "mp4", "/dev/null")
 	pass2 := exec.Command("ffmpeg", "-y", "-i", file, "-c:v", "libx264", "-preset", *preset,
-		"-b:v", fmt.Sprintf("%dk", bitrate), "-pass", "2", "-passlogfile", file,
-		"-c:a", "aac", "-b:a", fmt.Sprintf("%dk", AUDIO_BITRATE), output)
+		"-b:v", fmt.Sprintf("%dk", bitrate), "-pass", "2", "-passlogfile", file, "-ac", "1", "-ar", "32000",
+		"-c:a", "libmp3lame", "-b:a", fmt.Sprintf("%dk", AUDIO_BITRATE), output)
 
 	pass1.Stderr = os.Stderr
 	pass1.Stdout = os.Stdout
@@ -78,7 +79,6 @@ func main() {
 		if pass2.Process != nil {
 			pass2.Process.Kill()
 		}
-		cleanup()
 	}()
 
 	err = pass1.Run()
