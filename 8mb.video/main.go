@@ -14,14 +14,11 @@ import (
 	"strings"
 )
 
-// in kilobits per second
-const AUDIO_BITRATE = 96
-
 func main() {
 	size := flag.Float64("size", 8, "target size in MB")
 	preset := flag.String("preset", "slow", "h264 encode preset")
 	down := flag.Float64("down", 1, "downscale multiplier")
-
+	music := flag.Bool("music", false, "stereo audio")
 	flag.Parse()
 
 	if len(flag.Args()) == 0 {
@@ -53,8 +50,15 @@ func main() {
 	}
 
 	bitfloat := *size * 1024.0 * 8.0 / seconds
+	//audio bitrate
+	bitratea := 64
+	audioch := 1
+	if *music {
+		bitratea *= 2
+		audioch *= 2
+	}
 	// video bitrate
-	bitrate := int(bitfloat) - AUDIO_BITRATE
+	bitratev := int(bitfloat) - bitratea
 
 	// construct output filename
 	arr := strings.Split(file, ".")
@@ -63,11 +67,11 @@ func main() {
 	vfopt := fmt.Sprintf("scale=iw/%f:ih/%f", *down, *down)
 
 	pass1 := exec.Command("ffmpeg", "-y", "-i", file, "-vf", vfopt, "-c:v", "libx264", "-preset", *preset,
-		"-b:v", fmt.Sprintf("%dk", bitrate), "-pass", "1", "-passlogfile", file,
+		"-b:v", fmt.Sprintf("%dk", bitratev), "-pass", "1", "-passlogfile", file,
 		"-an", "-f", "null", "/dev/null")
 	pass2 := exec.Command("ffmpeg", "-y", "-i", file, "-vf", vfopt, "-c:v", "libx264", "-preset", *preset,
-		"-b:v", fmt.Sprintf("%dk", bitrate), "-pass", "2", "-passlogfile", file,
-		"-c:a", "aac", "-b:a", fmt.Sprintf("%dk", AUDIO_BITRATE), output)
+		"-b:v", fmt.Sprintf("%dk", bitratev), "-pass", "2", "-passlogfile", file,
+		"-ac", fmt.Sprintf("%d", audioch), "-c:a", "aac", "-b:a", fmt.Sprintf("%dk", bitratea), output)
 
 	pass1.Stderr = os.Stderr
 	pass1.Stdout = os.Stdout
