@@ -11,24 +11,27 @@ import (
 	"os/signal"
 	"strconv"
 	"strings"
-
-	"golang.org/x/exp/slices"
 )
 
 // in kilobits per second
-const AUDIO_BITRATE = 48
-
-const DOWNSCALE = "-vf scale=iw/%f:ih/%f"
+const AUDIO_BITRATE = 64
 
 func main() {
 	size := flag.Float64("size", 8, "target size in MB")
 	preset := flag.String("preset", "slow", "h264 encode preset")
-	downscale := flag.Float64("downscale", 0, "downscale multiplier")
+	downscale := flag.Float64("downscale", 1, "downscale multiplier")
+
 	flag.Parse()
+
 	if len(flag.Args()) == 0 {
 		fmt.Fprintln(os.Stderr, "error: no filename given")
 		os.Exit(1)
 	}
+	if *downscale < 0 {
+		fmt.Fprintln(os.Stderr, "downscale multiplier cannot be negative")
+		os.Exit(1)
+	}
+
 	file := flag.Args()[0]
 
 	probe := exec.Command(
@@ -56,20 +59,14 @@ func main() {
 	arr := strings.Split(file, ".")
 	output := strings.Join(arr[0:len(arr)-1], ".")
 	output = "8mb." + output + ".mp4"
+	vfopt := fmt.Sprintf("scale=iw/%f:ih/%f", *downscale, *downscale)
 
-	pass1 := exec.Command("ffmpeg", "-y", "-i", file, "-c:v", "libx264", "-preset", *preset,
+	pass1 := exec.Command("ffmpeg", "-y", "-i", file, "-vf", vfopt, "-c:v", "libx264", "-preset", *preset,
 		"-b:v", fmt.Sprintf("%dk", bitrate), "-pass", "1", "-passlogfile", file,
 		"-an", "-f", "null", "/dev/null")
-	pass2 := exec.Command("ffmpeg", "-y", "-i", file, "-c:v", "libx264", "-preset", *preset,
-		"-b:v", fmt.Sprintf("%dk", bitrate), "-pass", "2", "-passlogfile", file, "-ac", "1",
+	pass2 := exec.Command("ffmpeg", "-y", "-i", file, "-vf", vfopt, "-c:v", "libx264", "-preset", *preset,
+		"-b:v", fmt.Sprintf("%dk", bitrate), "-pass", "2", "-passlogfile", file,
 		"-c:a", "libopus", "-b:a", fmt.Sprintf("%dk", AUDIO_BITRATE), output)
-
-	if *downscale > 0 {
-		pass1.Args = slices.Insert(pass1.Args, 4,
-			strings.Split(fmt.Sprintf(DOWNSCALE, *downscale, *downscale), " ")...)
-		pass2.Args = slices.Insert(pass2.Args, 4,
-			strings.Split(fmt.Sprintf(DOWNSCALE, *downscale, *downscale), " ")...)
-	}
 
 	pass1.Stderr = os.Stderr
 	pass1.Stdout = os.Stdout
