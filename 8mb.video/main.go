@@ -18,12 +18,12 @@ import (
 // in kilobits per second
 const AUDIO_BITRATE = 48
 
-const DOWNSCALE = "-vf scale=iw/2:ih/2"
+const DOWNSCALE = "-vf scale=iw/%f:ih/%f"
 
 func main() {
 	size := flag.Float64("size", 8, "target size in MB")
 	preset := flag.String("preset", "slow", "h264 encode preset")
-	downscale := flag.Bool("downscale", false, "downscale the resolution by 2x")
+	downscale := flag.Float64("downscale", 0, "downscale multiplier")
 	flag.Parse()
 	if len(flag.Args()) == 0 {
 		fmt.Fprintln(os.Stderr, "error: no filename given")
@@ -64,9 +64,11 @@ func main() {
 		"-b:v", fmt.Sprintf("%dk", bitrate), "-pass", "2", "-passlogfile", file, "-ac", "1",
 		"-c:a", "libopus", "-b:a", fmt.Sprintf("%dk", AUDIO_BITRATE), output)
 
-	if *downscale {
-		pass1.Args = slices.Insert(pass1.Args, 4, strings.Split(DOWNSCALE, " ")...)
-		pass2.Args = slices.Insert(pass2.Args, 4, strings.Split(DOWNSCALE, " ")...)
+	if *downscale > 0 {
+		pass1.Args = slices.Insert(pass1.Args, 4,
+			strings.Split(fmt.Sprintf(DOWNSCALE, *downscale, *downscale), " ")...)
+		pass2.Args = slices.Insert(pass2.Args, 4,
+			strings.Split(fmt.Sprintf(DOWNSCALE, *downscale, *downscale), " ")...)
 	}
 
 	pass1.Stderr = os.Stderr
