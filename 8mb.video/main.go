@@ -16,7 +16,6 @@ import (
 )
 
 // in kilobits per second
-// later in code we specify mp3 encoder because ffmpeg's aac encoder sucks
 const AUDIO_BITRATE = 48
 
 const DOWNSCALE = "-vf scale=iw/2:ih/2"
@@ -25,7 +24,6 @@ func main() {
 	size := flag.Float64("size", 8, "target size in MB")
 	preset := flag.String("preset", "slow", "h264 encode preset")
 	downscale := flag.Bool("downscale", false, "downscale the resolution by 2x")
-	h265 := flag.Bool("h265", false, "use h265")
 	flag.Parse()
 	if len(flag.Args()) == 0 {
 		fmt.Fprintln(os.Stderr, "error: no filename given")
@@ -59,16 +57,12 @@ func main() {
 	output := strings.Join(arr[0:len(arr)-1], ".")
 	output = "8mb." + output + ".mp4"
 
-	codec := "libx264"
-	if *h265 {
-		codec = "libx265"
-	}
-	pass1 := exec.Command("ffmpeg", "-y", "-i", file, "-c:v", codec, "-preset", *preset,
-		"-b:v", fmt.Sprintf("%dk", bitrate), "-pass", "1", "-passlogfile", file, "-ac", "1", "-ar", "32000",
-		"-c:a", "libmp3lame", "-b:a", fmt.Sprintf("%dk", AUDIO_BITRATE), "-f", "mp4", "/dev/null")
-	pass2 := exec.Command("ffmpeg", "-y", "-i", file, "-c:v", codec, "-preset", *preset,
-		"-b:v", fmt.Sprintf("%dk", bitrate), "-pass", "2", "-passlogfile", file, "-ac", "1", "-ar", "32000",
-		"-c:a", "libmp3lame", "-b:a", fmt.Sprintf("%dk", AUDIO_BITRATE), output)
+	pass1 := exec.Command("ffmpeg", "-y", "-i", file, "-c:v", "libx264", "-preset", *preset,
+		"-b:v", fmt.Sprintf("%dk", bitrate), "-pass", "1", "-passlogfile", file,
+		"-an", "-f", "null", "/dev/null")
+	pass2 := exec.Command("ffmpeg", "-y", "-i", file, "-c:v", "libx264", "-preset", *preset,
+		"-b:v", fmt.Sprintf("%dk", bitrate), "-pass", "2", "-passlogfile", file, "-ac", "1",
+		"-c:a", "libopus", "-b:a", fmt.Sprintf("%dk", AUDIO_BITRATE), output)
 
 	if *downscale {
 		pass1.Args = slices.Insert(pass1.Args, 4, strings.Split(DOWNSCALE, " ")...)
