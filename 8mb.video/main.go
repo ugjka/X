@@ -25,6 +25,7 @@ func main() {
 	size := flag.Float64("size", 8, "target size in MB")
 	preset := flag.String("preset", "slow", "h264 encode preset")
 	downscale := flag.Bool("downscale", false, "downscale the resolution by 2x")
+	h265 := flag.Bool("h265", false, "use h265")
 	flag.Parse()
 	if len(flag.Args()) == 0 {
 		fmt.Fprintln(os.Stderr, "error: no filename given")
@@ -58,10 +59,14 @@ func main() {
 	output := strings.Join(arr[0:len(arr)-1], ".")
 	output = "8mb." + output + ".mp4"
 
-	pass1 := exec.Command("ffmpeg", "-y", "-i", file, "-c:v", "libx264", "-preset", *preset,
+	codec := "libx264"
+	if *h265 {
+		codec = "libx265"
+	}
+	pass1 := exec.Command("ffmpeg", "-y", "-i", file, "-c:v", codec, "-preset", *preset,
 		"-b:v", fmt.Sprintf("%dk", bitrate), "-pass", "1", "-passlogfile", file, "-ac", "1", "-ar", "32000",
 		"-c:a", "libmp3lame", "-b:a", fmt.Sprintf("%dk", AUDIO_BITRATE), "-f", "mp4", "/dev/null")
-	pass2 := exec.Command("ffmpeg", "-y", "-i", file, "-c:v", "libx264", "-preset", *preset,
+	pass2 := exec.Command("ffmpeg", "-y", "-i", file, "-c:v", codec, "-preset", *preset,
 		"-b:v", fmt.Sprintf("%dk", bitrate), "-pass", "2", "-passlogfile", file, "-ac", "1", "-ar", "32000",
 		"-c:a", "libmp3lame", "-b:a", fmt.Sprintf("%dk", AUDIO_BITRATE), output)
 
