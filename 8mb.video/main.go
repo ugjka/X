@@ -1,3 +1,4 @@
+// https://8mb.video was down, so...
 // Fit a video into a 8mb file (Discord nitro pls?)
 // Needs ffmpeg ffprobe
 package main
@@ -14,12 +15,12 @@ import (
 )
 
 // in kilobits per second
-const AUDIO_BITRATE = 64
+const AUDIO_BITRATE = 96
 
 func main() {
 	size := flag.Float64("size", 8, "target size in MB")
 	preset := flag.String("preset", "slow", "h264 encode preset")
-	downscale := flag.Float64("downscale", 1, "downscale multiplier")
+	down := flag.Float64("down", 1, "downscale multiplier")
 
 	flag.Parse()
 
@@ -27,7 +28,7 @@ func main() {
 		fmt.Fprintln(os.Stderr, "error: no filename given")
 		os.Exit(1)
 	}
-	if *downscale < 0 {
+	if *down < 0 {
 		fmt.Fprintln(os.Stderr, "downscale multiplier cannot be negative")
 		os.Exit(1)
 	}
@@ -59,14 +60,14 @@ func main() {
 	arr := strings.Split(file, ".")
 	output := strings.Join(arr[0:len(arr)-1], ".")
 	output = "8mb." + output + ".mp4"
-	vfopt := fmt.Sprintf("scale=iw/%f:ih/%f", *downscale, *downscale)
+	vfopt := fmt.Sprintf("scale=iw/%f:ih/%f", *down, *down)
 
 	pass1 := exec.Command("ffmpeg", "-y", "-i", file, "-vf", vfopt, "-c:v", "libx264", "-preset", *preset,
 		"-b:v", fmt.Sprintf("%dk", bitrate), "-pass", "1", "-passlogfile", file,
 		"-an", "-f", "null", "/dev/null")
 	pass2 := exec.Command("ffmpeg", "-y", "-i", file, "-vf", vfopt, "-c:v", "libx264", "-preset", *preset,
 		"-b:v", fmt.Sprintf("%dk", bitrate), "-pass", "2", "-passlogfile", file,
-		"-c:a", "libopus", "-b:a", fmt.Sprintf("%dk", AUDIO_BITRATE), output)
+		"-c:a", "aac", "-b:a", fmt.Sprintf("%dk", AUDIO_BITRATE), output)
 
 	pass1.Stderr = os.Stderr
 	pass1.Stdout = os.Stdout
