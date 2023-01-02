@@ -11,15 +11,19 @@ import (
 	"os/signal"
 	"strconv"
 	"strings"
+
+	"golang.org/x/exp/slices"
 )
 
 // in kilobits per second
 // later in code we specify mp3 encoder because ffmpeg's aac encoder sucks
 const AUDIO_BITRATE = 48
+const DOWNSCALE = "-vf scale=iw/2:ih/2"
 
 func main() {
 	size := flag.Float64("size", 8, "target size in MB")
 	preset := flag.String("preset", "slow", "h264 encode preset")
+	downscale := flag.Bool("downscale", false, "downscale the resolution by 2x")
 	flag.Parse()
 	if len(flag.Args()) == 0 {
 		fmt.Fprintln(os.Stderr, "error: no filename given")
@@ -57,6 +61,10 @@ func main() {
 		"-b:v", fmt.Sprintf("%dk", bitrate), "-pass", "2", "-passlogfile", file, "-ac", "1", "-ar", "32000",
 		"-c:a", "libmp3lame", "-b:a", fmt.Sprintf("%dk", AUDIO_BITRATE), output)
 
+	if *downscale {
+		pass1.Args = slices.Insert(pass1.Args, 4, strings.Split(DOWNSCALE, " ")...)
+		pass2.Args = slices.Insert(pass2.Args, 4, strings.Split(DOWNSCALE, " ")...)
+	}
 	pass1.Stderr = os.Stderr
 	pass1.Stdout = os.Stdout
 	pass2.Stderr = os.Stderr
