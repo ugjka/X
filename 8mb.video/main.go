@@ -18,6 +18,7 @@ import (
 // in kilobits per second
 // later in code we specify mp3 encoder because ffmpeg's aac encoder sucks
 const AUDIO_BITRATE = 48
+
 const DOWNSCALE = "-vf scale=iw/2:ih/2"
 
 func main() {
@@ -30,10 +31,12 @@ func main() {
 		os.Exit(1)
 	}
 	file := flag.Args()[0]
+
 	probe := exec.Command(
 		"ffprobe", "-i", file, "-show_entries",
 		"format=duration", "-v", "quiet", "-of",
 		"csv=p=0")
+
 	secbytes, err := probe.Output()
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
@@ -45,6 +48,7 @@ func main() {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
+
 	bitfloat := *size * 1024.0 * 8.0 / seconds
 	// video bitrate
 	bitrate := int(bitfloat) - AUDIO_BITRATE
@@ -65,6 +69,7 @@ func main() {
 		pass1.Args = slices.Insert(pass1.Args, 4, strings.Split(DOWNSCALE, " ")...)
 		pass2.Args = slices.Insert(pass2.Args, 4, strings.Split(DOWNSCALE, " ")...)
 	}
+
 	pass1.Stderr = os.Stderr
 	pass1.Stdout = os.Stdout
 	pass2.Stderr = os.Stderr
