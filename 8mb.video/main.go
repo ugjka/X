@@ -60,6 +60,7 @@ func main() {
 
 	file := flag.Args()[0]
 
+	// get video lenght in seconds
 	probe := exec.Command(
 		"ffprobe", "-i", file, "-show_entries",
 		"format=duration", "-v", "quiet", "-of",
@@ -132,7 +133,7 @@ func main() {
 		os.Remove(file + ".m4a")
 	}
 
-	// Trap ctrl+c and kill
+	// trap ctrl+c and kill
 	sig := make(chan os.Signal, 1)
 	signal.Notify(sig, os.Interrupt, syscall.SIGTERM)
 	go func() {
