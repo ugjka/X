@@ -79,6 +79,7 @@ func main() {
 
 	// -0.1mb because the encoder sometimes overshoots
 	bitfloat := (*size - 0.1) * 1024.0 * 8.0 / seconds
+
 	//audio bitrate and channels
 	abitrate := 32
 	audioch := 1
@@ -86,6 +87,7 @@ func main() {
 		abitrate *= 2
 		audioch *= 2
 	}
+
 	// video bitrate
 	vbitrate := int(bitfloat) - abitrate
 
@@ -96,6 +98,7 @@ func main() {
 
 	// resolution scale filter
 	vfopt := fmt.Sprintf("scale=iw/%f:ih/%f", *down, *down)
+
 	pass1 := exec.Command("ffmpeg", "-y", "-i", file, "-vf", vfopt, "-c:v", "libx264", "-preset", *preset,
 		"-b:v", fmt.Sprintf("%dk", vbitrate), "-pass", "1", "-passlogfile", file,
 		"-an", "-f", "null", "/dev/null")
@@ -116,6 +119,7 @@ func main() {
 	pass2.Stderr = os.Stderr
 	pass2.Stdout = os.Stdout
 
+	// remove tmp files
 	cleanup := func() {
 		os.Remove(file + "-0.log")
 		os.Remove(file + "-0.log.mbtree")
@@ -125,6 +129,7 @@ func main() {
 		os.Remove(file + ".m4a")
 	}
 
+	// Trap ctrl+c and kill
 	sig := make(chan os.Signal, 1)
 	signal.Notify(sig, os.Interrupt, syscall.SIGTERM)
 	go func() {
