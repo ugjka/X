@@ -10,10 +10,26 @@ import (
 	"os"
 	"os/exec"
 	"os/signal"
+	"path"
 	"strconv"
 	"strings"
 	"syscall"
 )
+
+const USAGE = `Usage: %s [OPTIONS] [FILE]
+
+Compress a video to target size
+
+Options:
+-down float
+	  downscale multiplier (default 1)
+-music
+	  stereo audio
+-preset string
+	  h264 encode preset (default "slow")
+-size float
+	  target size in MB (default 8)
+`
 
 func main() {
 	exes := []string{"ffmpeg", "ffprobe", "fdkaac"}
@@ -28,6 +44,9 @@ func main() {
 	preset := flag.String("preset", "slow", "h264 encode preset")
 	down := flag.Float64("down", 1, "downscale multiplier")
 	music := flag.Bool("music", false, "stereo audio")
+	flag.Usage = func() {
+		fmt.Fprintf(os.Stderr, USAGE, path.Base(os.Args[0]))
+	}
 	flag.Parse()
 
 	if len(flag.Args()) == 0 {
