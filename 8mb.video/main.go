@@ -34,8 +34,8 @@ func main() {
 		fmt.Fprintln(os.Stderr, "error: no filename given")
 		os.Exit(1)
 	}
-	if *down < 0 {
-		fmt.Fprintln(os.Stderr, "downscale multiplier cannot be negative")
+	if *down <= 0 {
+		fmt.Fprintln(os.Stderr, "downscale multiplier cannot be negative or zero")
 		os.Exit(1)
 	}
 
@@ -58,9 +58,9 @@ func main() {
 		os.Exit(1)
 	}
 
-	// -0.1mb because it sometimes overshoots
+	// -0.1mb because the encoder sometimes overshoots
 	bitfloat := (*size - 0.1) * 1024.0 * 8.0 / seconds
-	//audio bitrate
+	//audio bitrate and channels
 	abitrate := 32
 	audioch := 1
 	if *music {
@@ -75,6 +75,7 @@ func main() {
 	output := strings.Join(arr[0:len(arr)-1], ".")
 	output = "8mb." + output + ".mp4"
 
+	// resolution scale filter
 	vfopt := fmt.Sprintf("scale=iw/%f:ih/%f", *down, *down)
 	pass1 := exec.Command("ffmpeg", "-y", "-i", file, "-vf", vfopt, "-c:v", "libx264", "-preset", *preset,
 		"-b:v", fmt.Sprintf("%dk", vbitrate), "-pass", "1", "-passlogfile", file,
