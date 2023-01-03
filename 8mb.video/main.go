@@ -34,8 +34,8 @@ func main() {
 		fmt.Fprintln(os.Stderr, "error: no filename given")
 		os.Exit(1)
 	}
-	if *down <= 0 {
-		fmt.Fprintln(os.Stderr, "downscale multiplier cannot be negative or zero")
+	if *down < 1 {
+		fmt.Fprintln(os.Stderr, "downscale multiplier cannot be less than 1")
 		os.Exit(1)
 	}
 
