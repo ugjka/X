@@ -73,7 +73,7 @@ func main() {
 	// construct output filename
 	arr := strings.Split(file, ".")
 	output := strings.Join(arr[0:len(arr)-1], ".")
-	output = "8mb." + output + ".mp4"
+	output = fmt.Sprintf("%gmb.%s.mp4", *size, output)
 
 	// resolution scale filter
 	vfopt := fmt.Sprintf("scale=iw/%f:ih/%f", *down, *down)
