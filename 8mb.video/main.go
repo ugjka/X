@@ -1,6 +1,6 @@
 // https://8mb.video was down, so...
 // Fit a video into a 8mb file (Discord nitro pls?)
-// Needs ffmpeg ffprobe
+// Needs ffmpeg ffprobe fdkaac
 package main
 
 import (
@@ -12,9 +12,18 @@ import (
 	"os/signal"
 	"strconv"
 	"strings"
+	"syscall"
 )
 
 func main() {
+	exes := []string{"ffmpeg", "ffprobe", "fdkaac"}
+	for _, exe := range exes {
+		if _, err := exec.LookPath(exe); err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			os.Exit(1)
+		}
+	}
+
 	size := flag.Float64("size", 8, "target size in MB")
 	preset := flag.String("preset", "slow", "h264 encode preset")
 	down := flag.Float64("down", 1, "downscale multiplier")
@@ -48,10 +57,11 @@ func main() {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
+
 	// -0.1mb because it sometimes overshoots
 	bitfloat := (*size - 0.1) * 1024.0 * 8.0 / seconds
 	//audio bitrate
-	abitrate := 64
+	abitrate := 32
 	audioch := 1
 	if *music {
 		abitrate *= 2
@@ -69,12 +79,20 @@ func main() {
 	pass1 := exec.Command("ffmpeg", "-y", "-i", file, "-vf", vfopt, "-c:v", "libx264", "-preset", *preset,
 		"-b:v", fmt.Sprintf("%dk", vbitrate), "-pass", "1", "-passlogfile", file,
 		"-an", "-f", "null", "/dev/null")
-	pass2 := exec.Command("ffmpeg", "-y", "-i", file, "-vf", vfopt, "-c:v", "libx264", "-preset", *preset,
-		"-b:v", fmt.Sprintf("%dk", vbitrate), "-pass", "2", "-passlogfile", file,
-		"-ac", fmt.Sprintf("%d", audioch), "-c:a", "aac", "-b:a", fmt.Sprintf("%dk", abitrate), output)
-
 	pass1.Stderr = os.Stderr
 	pass1.Stdout = os.Stdout
+
+	wavfile := exec.Command("ffmpeg", "-y", "-i", file, "-ac", fmt.Sprintf("%d", audioch), file+".wav")
+	wavfile.Stderr = os.Stderr
+	wavfile.Stdout = os.Stdout
+
+	aacfile := exec.Command("fdkaac", "-p", "5", "-b", fmt.Sprintf("%d000", abitrate), file+".wav")
+	aacfile.Stderr = os.Stderr
+	aacfile.Stdout = os.Stdout
+
+	pass2 := exec.Command("ffmpeg", "-y", "-i", file, "-i", file+".m4a", "-vf", vfopt, "-c:v", "libx264",
+		"-preset", *preset, "-b:v", fmt.Sprintf("%dk", vbitrate), "-pass", "2", "-passlogfile", file,
+		"-c:a", "copy", "-map", "0:v:0", "-map", "1:a:0", output)
 	pass2.Stderr = os.Stderr
 	pass2.Stdout = os.Stdout
 
@@ -83,14 +101,22 @@ func main() {
 		os.Remove(file + "-0.log.mbtree")
 		os.Remove(file + "-0.log.temp")
 		os.Remove(file + "-0.log.mbtree.temp")
+		os.Remove(file + ".wav")
+		os.Remove(file + ".m4a")
 	}
 
 	sig := make(chan os.Signal, 1)
-	signal.Notify(sig, os.Interrupt)
+	signal.Notify(sig, os.Interrupt, syscall.SIGTERM)
 	go func() {
 		<-sig
 		if pass1.Process != nil {
 			pass1.Process.Kill()
+		}
+		if wavfile.Process != nil {
+			wavfile.Process.Kill()
+		}
+		if aacfile.Process != nil {
+			aacfile.Process.Kill()
 		}
 		if pass2.Process != nil {
 			pass2.Process.Kill()
@@ -98,6 +124,18 @@ func main() {
 	}()
 
 	err = pass1.Run()
+	if err != nil {
+		cleanup()
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+	err = wavfile.Run()
+	if err != nil {
+		cleanup()
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+	err = aacfile.Run()
 	if err != nil {
 		cleanup()
 		fmt.Fprintln(os.Stderr, err)
