@@ -74,8 +74,8 @@ func main() {
 	arr := strings.Split(file, ".")
 	output := strings.Join(arr[0:len(arr)-1], ".")
 	output = "8mb." + output + ".mp4"
-	vfopt := fmt.Sprintf("scale=iw/%f:ih/%f", *down, *down)
 
+	vfopt := fmt.Sprintf("scale=iw/%f:ih/%f", *down, *down)
 	pass1 := exec.Command("ffmpeg", "-y", "-i", file, "-vf", vfopt, "-c:v", "libx264", "-preset", *preset,
 		"-b:v", fmt.Sprintf("%dk", vbitrate), "-pass", "1", "-passlogfile", file,
 		"-an", "-f", "null", "/dev/null")
