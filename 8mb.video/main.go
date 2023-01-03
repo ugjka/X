@@ -22,7 +22,7 @@ Compress a video to target size
 
 Options:
 -down float
-	  downscale multiplier (default 1)
+	  resolution downscale multiplier (default 1)
 -music
 	  stereo audio
 -preset string
@@ -42,7 +42,7 @@ func main() {
 
 	size := flag.Float64("size", 8, "target size in MB")
 	preset := flag.String("preset", "slow", "h264 encode preset")
-	down := flag.Float64("down", 1, "downscale multiplier")
+	down := flag.Float64("down", 1, "resolution downscale multiplier")
 	music := flag.Bool("music", false, "stereo audio")
 	flag.Usage = func() {
 		fmt.Fprintf(os.Stderr, USAGE, path.Base(os.Args[0]))
