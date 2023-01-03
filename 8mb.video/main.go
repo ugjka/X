@@ -105,6 +105,9 @@ func main() {
 	pass1.Stderr = os.Stderr
 	pass1.Stdout = os.Stdout
 
+	// we need to do this mumbo jumbo because fdk_aac encoder is disabled
+	// on 99.99% of ffmpeg installations (even an Arch)
+	// fdkaac standalone encoder is fine though
 	wavfile := exec.Command("ffmpeg", "-y", "-i", file, "-ac", fmt.Sprintf("%d", audioch), file+".wav")
 	wavfile.Stderr = os.Stderr
 	wavfile.Stdout = os.Stdout
