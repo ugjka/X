@@ -78,8 +78,8 @@ func main() {
 		os.Exit(1)
 	}
 
-	// -0.1mb because the encoder sometimes overshoots
-	bitfloat := (*size - 0.1) * 1024.0 * 8.0 / seconds
+	// -0.0125*size because the encoder sometimes overshoots
+	bitfloat := (*size - 0.0125**size) * 1024.0 * 8.0 / seconds
 
 	//audio bitrate and channels
 	abitrate := 32
