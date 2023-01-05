@@ -32,6 +32,7 @@ Options:
 `
 
 func main() {
+	//exes := []string{"ffmpeg.exe", "ffprobe.exe", "fdkaac.exe"}
 	exes := []string{"ffmpeg", "ffprobe", "fdkaac"}
 	for _, exe := range exes {
 		if _, err := exec.LookPath(exe); err != nil {
