@@ -25,6 +25,8 @@ Options:
 	  resolution downscale multiplier (default 1)
 -music
 	  stereo audio
+-voice
+	  16kbps audio
 -preset string
 	  h264 encode preset (default "slow")
 -size float
@@ -45,6 +47,7 @@ func main() {
 	preset := flag.String("preset", "slow", "h264 encode preset")
 	down := flag.Float64("down", 1, "resolution downscale multiplier")
 	music := flag.Bool("music", false, "stereo audio")
+	voice := flag.Bool("voice", false, "16kbps mono audio")
 	flag.Usage = func() {
 		fmt.Fprintf(os.Stderr, USAGE, path.Base(os.Args[0]))
 	}
@@ -88,6 +91,10 @@ func main() {
 	if *music {
 		abitrate *= 2
 		audioch *= 2
+	}
+	if *voice {
+		abitrate = 16
+		audioch = 1
 	}
 
 	// video bitrate
