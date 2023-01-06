@@ -1,3 +1,4 @@
+// MIT License | ugjka@proton.me
 // Show tray icon while your script/program executes
 package main
 

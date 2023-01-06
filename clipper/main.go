@@ -1,3 +1,4 @@
+// MIT License | ugjka@proton.me
 // clipper: sync clipboard between 2 machines
 // first arg must be the client's address
 package main

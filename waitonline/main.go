@@ -1,3 +1,4 @@
+// MIT License | ugjka@proton.me
 // Wait for machine come online
 // Usage: waitonline sshmachine.local 22
 package main

@@ -1,3 +1,4 @@
+// MIT License | ugjka@proton.me
 // https://8mb.video was down, so...
 // Fit a video into a 8mb file (Discord nitro pls?)
 // Needs ffmpeg ffprobe fdkaac

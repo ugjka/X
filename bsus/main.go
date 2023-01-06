@@ -1,3 +1,4 @@
+// MIT License | ugjka@proton.me
 // Suspend your machine when bluetooth headset disconnects
 package main
 

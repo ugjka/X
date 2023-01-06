@@ -1,3 +1,4 @@
+// MIT License | ugjka@proton.me
 // Dump laptop's EC content
 // Might need modprobe ec_sys
 package main

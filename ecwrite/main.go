@@ -1,3 +1,4 @@
+// MIT License | ugjka@proton.me
 // Write to EC register
 // Might need 'modprobe ec_sys write_support=1'
 // Values must be Hex
