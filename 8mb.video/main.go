@@ -20,6 +20,7 @@ import (
 const USAGE = `Usage: %s [OPTIONS] [FILE]
 
 Compress a video to target size
+(default audio is mono 32kbps aac-he v1)
 
 Options:
 -down float
@@ -118,7 +119,8 @@ func main() {
 	// we need to do this mumbo jumbo because fdk_aac encoder is disabled
 	// on 99.99% of ffmpeg installations (even an Arch)
 	// fdkaac standalone encoder is fine though
-	wavfile := exec.Command("ffmpeg", "-y", "-i", file, "-ac", fmt.Sprintf("%d", audioch), file+".wav")
+	wavfile := exec.Command("ffmpeg", "-y", "-i", file, "-ar", "44100",
+		"-ac", fmt.Sprintf("%d", audioch), file+".wav")
 	wavfile.Stderr = os.Stderr
 	wavfile.Stdout = os.Stdout
 
