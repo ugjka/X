@@ -68,9 +68,12 @@ func main() {
 
 	// get video lenght in seconds
 	probe := exec.Command(
-		"ffprobe", "-i", file, "-show_entries",
-		"format=duration", "-v", "quiet", "-of",
-		"csv=p=0")
+		"ffprobe",
+		"-i", file,
+		"-show_entries", "format=duration",
+		"-v", "quiet",
+		"-of", "csv=p=0",
+	)
 
 	secbytes, err := probe.Output()
 	if err != nil {
@@ -110,29 +113,61 @@ func main() {
 	// resolution scale filter
 	vfopt := fmt.Sprintf("scale=iw/%f:ih/%f", *down, *down)
 
-	pass1 := exec.Command("ffmpeg", "-y", "-i", file, "-vf", vfopt, "-c:v", "libx264", "-preset", *preset,
-		"-b:v", fmt.Sprintf("%dk", vbitrate), "-pass", "1", "-passlogfile", file,
+	pass1 := exec.Command(
+		"ffmpeg", "-y",
+		"-i", file,
+		"-vf", vfopt,
+		"-c:v", "libx264",
+		"-preset", *preset,
+		"-b:v", fmt.Sprintf("%dk", vbitrate),
+		"-pass", "1",
+		"-passlogfile", file,
 		"-movflags", "+faststart",
-		"-an", "-f", "null", "/dev/null")
+		"-an",
+		"-f", "null",
+		"/dev/null",
+	)
 	pass1.Stderr = os.Stderr
 	pass1.Stdout = os.Stdout
 
 	// we need to do this mumbo jumbo because fdk_aac encoder is disabled
 	// on 99.99% of ffmpeg installations (even an Arch)
 	// fdkaac standalone encoder is fine though
-	wavfile := exec.Command("ffmpeg", "-y", "-i", file, "-ar", "44100",
-		"-ac", fmt.Sprintf("%d", audioch), file+".wav")
+	wavfile := exec.Command(
+		"ffmpeg", "-y",
+		"-i", file,
+		"-ar", "44100",
+		"-ac", fmt.Sprintf("%d", audioch),
+		file+".wav",
+	)
 	wavfile.Stderr = os.Stderr
 	wavfile.Stdout = os.Stdout
 
-	aacfile := exec.Command("fdkaac", "-p", "5", "-b", fmt.Sprintf("%d000", abitrate), file+".wav")
+	aacfile := exec.Command(
+		"fdkaac",
+		"-p", "5",
+		"-b", fmt.Sprintf("%d000", abitrate),
+		file+".wav",
+	)
 	aacfile.Stderr = os.Stderr
 	aacfile.Stdout = os.Stdout
 
-	pass2 := exec.Command("ffmpeg", "-y", "-i", file, "-i", file+".m4a", "-vf", vfopt, "-c:v", "libx264",
-		"-preset", *preset, "-b:v", fmt.Sprintf("%dk", vbitrate), "-pass", "2", "-passlogfile", file,
+	pass2 := exec.Command(
+		"ffmpeg", "-y",
+		"-i", file,
+		"-i", file+".m4a",
+		"-vf", vfopt,
+		"-c:v", "libx264",
+		"-preset", *preset,
+		"-b:v", fmt.Sprintf("%dk", vbitrate),
+		"-pass", "2",
+		"-passlogfile", file,
 		"-movflags", "+faststart",
-		"-c:a", "copy", "-map", "0:v:0", "-map", "1:a:0", output)
+		"-c:a", "copy",
+		"-map", "0:v:0",
+		"-map", "1:a:0",
+		output,
+	)
 	pass2.Stderr = os.Stderr
 	pass2.Stdout = os.Stdout
 
