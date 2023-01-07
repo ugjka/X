@@ -2,6 +2,7 @@
 // https://8mb.video was down, so...
 // Fit a video into a 8mb file (Discord nitro pls?)
 // Needs ffmpeg ffprobe fdkaac
+// Tested only on Linux
 package main
 
 import (
@@ -36,7 +37,6 @@ Options:
 `
 
 func main() {
-	//exes := []string{"ffmpeg.exe", "ffprobe.exe", "fdkaac.exe"}
 	exes := []string{"ffmpeg", "ffprobe", "fdkaac"}
 	for _, exe := range exes {
 		if _, err := exec.LookPath(exe); err != nil {
@@ -87,10 +87,10 @@ func main() {
 		os.Exit(1)
 	}
 
-	// -0.0125*size because the encoder sometimes overshoots
-	bitfloat := (*size - 0.0125**size) * 1024.0 * 8.0 / seconds
-
-	//audio bitrate and channels
+	bitfloat := *size * 1024.0 * 8.0 / seconds
+	// encoder overshoot, muxing overhead (not exact science)
+	bitfloat -= 3
+	// audio bitrate and channels
 	abitrate := 32
 	audioch := 1
 	if *music {
