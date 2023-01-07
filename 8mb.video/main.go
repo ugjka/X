@@ -112,6 +112,7 @@ func main() {
 
 	pass1 := exec.Command("ffmpeg", "-y", "-i", file, "-vf", vfopt, "-c:v", "libx264", "-preset", *preset,
 		"-b:v", fmt.Sprintf("%dk", vbitrate), "-pass", "1", "-passlogfile", file,
+		"-movflags", "+faststart",
 		"-an", "-f", "null", "/dev/null")
 	pass1.Stderr = os.Stderr
 	pass1.Stdout = os.Stdout
@@ -130,6 +131,7 @@ func main() {
 
 	pass2 := exec.Command("ffmpeg", "-y", "-i", file, "-i", file+".m4a", "-vf", vfopt, "-c:v", "libx264",
 		"-preset", *preset, "-b:v", fmt.Sprintf("%dk", vbitrate), "-pass", "2", "-passlogfile", file,
+		"-movflags", "+faststart",
 		"-c:a", "copy", "-map", "0:v:0", "-map", "1:a:0", output)
 	pass2.Stderr = os.Stderr
 	pass2.Stdout = os.Stdout
