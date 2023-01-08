@@ -86,11 +86,16 @@ func main() {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
-
-	bitfloat := *size * 1024.0 * 8.0 / seconds
-	// encoder overshoot, muxing overhead (not exact science)
-	bitfloat -= 3
-	// audio bitrate and channels
+	bitfloat := *size * 8388.608 / seconds
+	// deal with chunk overshoot on high bitrates
+	// ffmpeg processes in 256kb chunks (guess)
+	if bitfloat > 1000 {
+		bitfloat -= 0.25 * 8388.608 / seconds
+	}
+	// muxing overhead (not exact science)
+	// based on observed values
+	overhead := 104.7 / bitfloat * 0.04641462
+	bitfloat -= bitfloat * overhead
 	abitrate := 32
 	audioch := 1
 	if *music {
