@@ -87,14 +87,19 @@ func main() {
 		os.Exit(1)
 	}
 	bitfloat := *size * 8388.608 / seconds
+
 	// deal with chunk overshoot on high bitrates
-	// ffmpeg processes in 256kb chunks (guess)
-	if bitfloat > 1000 {
+	switch {
+	case bitfloat > 800:
 		bitfloat -= 0.25 * 8388.608 / seconds
+	case bitfloat > 400:
+		bitfloat -= 0.0625 * 8388.608 / seconds
+	default:
+		bitfloat -= 0.03125 * 8388.608 / seconds
 	}
 	// muxing overhead (not exact science)
 	// based on observed values
-	overhead := 104.7 / bitfloat * 0.04641462
+	overhead := 99.1 / bitfloat * 0.06868927
 	bitfloat -= bitfloat * overhead
 	abitrate := 32
 	audioch := 1
