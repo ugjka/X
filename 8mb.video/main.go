@@ -88,6 +88,11 @@ func main() {
 	}
 	bitfloat := *size * 8388.608 / seconds
 
+	// muxing overhead (not exact science)
+	// based on observed values
+	overhead := 96 / bitfloat * 0.07098343
+	bitfloat -= bitfloat * overhead
+
 	// deal with chunk overshoot on high bitrates
 	switch {
 	case bitfloat > 800:
@@ -97,10 +102,6 @@ func main() {
 	default:
 		bitfloat -= 0.03125 * 8388.608 / seconds
 	}
-	// muxing overhead (not exact science)
-	// based on observed values
-	overhead := 99.1 / bitfloat * 0.06868927
-	bitfloat -= bitfloat * overhead
 	abitrate := 32
 	audioch := 1
 	if *music {
