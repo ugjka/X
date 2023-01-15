@@ -31,7 +31,7 @@ Options:
 -voice
 	  16kbps mono audio
 -preset string
-	  h264 encode preset (default "slow")
+	  h264 encode preset (default "veryslow")
 -size float
 	  target size in MB (default 8)
 `
@@ -46,7 +46,7 @@ func main() {
 	}
 
 	size := flag.Float64("size", 8, "target size in MB")
-	preset := flag.String("preset", "slow", "h264 encode preset")
+	preset := flag.String("preset", "veryslow", "h264 encode preset")
 	down := flag.Float64("down", 1, "resolution downscale multiplier")
 	music := flag.Bool("music", false, "64kbps stereo audio")
 	voice := flag.Bool("voice", false, "16kbps mono audio")
