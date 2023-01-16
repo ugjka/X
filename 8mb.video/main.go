@@ -31,7 +31,7 @@ Options:
 -voice
 	  16kbps mono audio
 -preset string
-	  h264 encode preset (default "veryslow")
+	  h264 encode preset (default "slow")
 -size float
 	  target size in MB (default 8)
 `
