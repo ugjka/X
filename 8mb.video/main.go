@@ -46,7 +46,7 @@ func main() {
 	}
 
 	size := flag.Float64("size", 8, "target size in MB")
-	preset := flag.String("preset", "veryslow", "h264 encode preset")
+	preset := flag.String("preset", "slow", "h264 encode preset")
 	down := flag.Float64("down", 1, "resolution downscale multiplier")
 	music := flag.Bool("music", false, "64kbps stereo audio")
 	voice := flag.Bool("voice", false, "16kbps mono audio")
@@ -107,14 +107,16 @@ func main() {
 	bitfloat -= bitfloat * overhead
 
 	abitrate := 32
-	audioch := 1
+	audioch := 2
+	profile := "29"
 	if *music {
 		abitrate *= 2
-		audioch *= 2
+		profile = "5"
 	}
 	if *voice {
 		abitrate = 16
 		audioch = 1
+		profile = "5"
 	}
 
 	// video bitrate
@@ -160,7 +162,7 @@ func main() {
 
 	aacfile := exec.Command(
 		"fdkaac",
-		"-p", "5",
+		"-p", profile,
 		"-b", fmt.Sprintf("%d000", abitrate),
 		file+".wav",
 	)
