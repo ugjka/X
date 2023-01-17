@@ -29,7 +29,7 @@ Options:
 -music
 	  64kbps stereo audio (aac-he v1)
 -voice
-	  16kbps mono audio
+	  16kbps mono audio (aac-he v1)
 -preset string
 	  h264 encode preset (default "slow")
 -size float
@@ -49,7 +49,7 @@ func main() {
 	preset := flag.String("preset", "slow", "h264 encode preset")
 	down := flag.Float64("down", 1, "resolution downscale multiplier")
 	music := flag.Bool("music", false, "64kbps stereo audio (aac-he v1)")
-	voice := flag.Bool("voice", false, "16kbps mono audio")
+	voice := flag.Bool("voice", false, "16kbps mono audio (aac-he v1)")
 	flag.Usage = func() {
 		fmt.Fprintf(os.Stderr, USAGE, path.Base(os.Args[0]))
 	}
