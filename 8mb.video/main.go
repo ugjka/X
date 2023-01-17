@@ -21,13 +21,13 @@ import (
 const USAGE = `Usage: %s [OPTIONS] [FILE]
 
 Compress a video to target size
-(default audio: mono 32kbps aac-he v1)
+(default audio: 32kbps stereo aac-he v2)
 
 Options:
 -down float
 	  resolution downscale multiplier (default 1)
 -music
-	  64kbps stereo audio
+	  64kbps stereo audio (aac-he v1)
 -voice
 	  16kbps mono audio
 -preset string
@@ -48,7 +48,7 @@ func main() {
 	size := flag.Float64("size", 8, "target size in MB")
 	preset := flag.String("preset", "slow", "h264 encode preset")
 	down := flag.Float64("down", 1, "resolution downscale multiplier")
-	music := flag.Bool("music", false, "64kbps stereo audio")
+	music := flag.Bool("music", false, "64kbps stereo audio (aac-he v1)")
 	voice := flag.Bool("voice", false, "16kbps mono audio")
 	flag.Usage = func() {
 		fmt.Fprintf(os.Stderr, USAGE, path.Base(os.Args[0]))
