@@ -103,7 +103,7 @@ func main() {
 
 	// muxing overhead (not exact science)
 	// based on observed values
-	overhead := 96 / bitfloat * 0.07098343
+	overhead := 86.8 / bitfloat * 0.05785312
 	bitfloat -= bitfloat * overhead
 
 	abitrate := 32
