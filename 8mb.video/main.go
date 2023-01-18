@@ -127,7 +127,7 @@ func main() {
 	output := strings.Join(arr[0:len(arr)-1], ".")
 	output = fmt.Sprintf("%gmb.%s.mp4", *size, output)
 
-	// resolution scale filter and fps filter
+	// resolution scale filter and 24fps
 	vfopt := fmt.Sprintf("scale=iw/%f:ih/%f, fps=24", *down, *down)
 
 	pass1 := exec.Command(
