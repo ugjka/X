@@ -128,11 +128,10 @@ func main() {
 	output = fmt.Sprintf("%gmb.%s.mp4", *size, output)
 
 	// resolution scale filter
-	vfopt := fmt.Sprintf("scale=iw/%f:ih/%f", *down, *down)
+	vfopt := fmt.Sprintf("scale=iw/%f:ih/%f, fps=24", *down, *down)
 
 	pass1 := exec.Command(
 		"ffmpeg", "-y",
-		"-r", "24",
 		"-i", file,
 		"-vf", vfopt,
 		"-c:v", "libx264",
@@ -172,7 +171,6 @@ func main() {
 
 	pass2 := exec.Command(
 		"ffmpeg", "-y",
-		"-r", "24",
 		"-i", file,
 		"-i", file+".m4a",
 		"-vf", vfopt,
