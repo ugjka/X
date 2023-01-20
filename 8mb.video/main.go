@@ -86,19 +86,21 @@ func main() {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
-	bitfloat := *size * 8388.608 / seconds
+
+	const MEG = 8388.608
+	bitfloat := *size * MEG / seconds
 
 	// deal with chunk overshoot on high bitrates
 	switch {
 	case bitfloat > 800:
 		// 256KB overshoot
-		bitfloat -= 0.25 * 8388.608 / seconds
+		bitfloat -= 0.25 * MEG / seconds
 	case bitfloat > 400:
 		// 64KB overshoot
-		bitfloat -= 0.0625 * 8388.608 / seconds
+		bitfloat -= 0.0625 * MEG / seconds
 	default:
 		// 32KB overshoot
-		bitfloat -= 0.03125 * 8388.608 / seconds
+		bitfloat -= 0.03125 * MEG / seconds
 	}
 
 	// muxing overhead (not exact science)
