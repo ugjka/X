@@ -21,15 +21,15 @@ import (
 const USAGE = `Usage: %s [OPTIONS] [FILE]
 
 Compress a video to target size
-(default audio: 32kbps stereo aac-he v2)
+(default audio: 32kbps stereo he-aac v2)
 
 Options:
 -down float
 	  resolution downscale multiplier (default 1)
 -music
-	  64kbps stereo audio (aac-he v1)
+	  64kbps stereo audio (he-aac v1)
 -voice
-	  16kbps mono audio (aac-he v1)
+	  16kbps mono audio (he-aac v1)
 -preset string
 	  h264 encode preset (default "slow")
 -size float
@@ -48,8 +48,8 @@ func main() {
 	size := flag.Float64("size", 8, "target size in MB")
 	preset := flag.String("preset", "slow", "h264 encode preset")
 	down := flag.Float64("down", 1, "resolution downscale multiplier")
-	music := flag.Bool("music", false, "64kbps stereo audio (aac-he v1)")
-	voice := flag.Bool("voice", false, "16kbps mono audio (aac-he v1)")
+	music := flag.Bool("music", false, "64kbps stereo audio (he-aac v1)")
+	voice := flag.Bool("voice", false, "16kbps mono audio (he-aac v1)")
 	flag.Usage = func() {
 		fmt.Fprintf(os.Stderr, USAGE, path.Base(os.Args[0]))
 	}
@@ -90,7 +90,8 @@ func main() {
 	const MEG = 8388.608
 	bitfloat := *size * MEG / seconds
 
-	// deal with chunk overshoot on high bitrates
+	// ffmpeg encodes stuff in chunks
+	// we need to deal with possible bitrate overshoot
 	switch {
 	case bitfloat > 800:
 		// 256KB overshoot
@@ -150,7 +151,7 @@ func main() {
 	pass1.Stdout = os.Stdout
 
 	// we need to do this mumbo jumbo because fdk_aac encoder is disabled
-	// on 99.99% of ffmpeg installations (even an Arch)
+	// on 99.99% of ffmpeg installations (even on Arch)
 	// fdkaac standalone encoder is fine though
 	wavfile := exec.Command(
 		"ffmpeg", "-y",
