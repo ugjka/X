@@ -130,7 +130,7 @@ func main() {
 	output = fmt.Sprintf("%gmb.%s.mp4", *size, output)
 
 	// resolution scale filter and 24fps
-	vfopt := fmt.Sprintf("scale=iw/%f:ih/%f, fps=24", *down, *down)
+	vfopt := fmt.Sprintf("scale=ceil(iw/%f)*2:ceil(ih/%f)*2, fps=24", *down, *down)
 
 	pass1 := exec.Command(
 		"ffmpeg", "-y",
