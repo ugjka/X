@@ -26,6 +26,7 @@ Compress a video to target size
 Options:
 -down float
 	  resolution downscale multiplier (default 1)
+	  values above 100 scales by the width in pixels
 -music
 	  64kbps stereo audio (he-aac v1)
 -voice
@@ -47,7 +48,7 @@ func main() {
 
 	size := flag.Float64("size", 8, "target size in MB")
 	preset := flag.String("preset", "slow", "h264 encode preset")
-	down := flag.Float64("down", 1, "resolution downscale multiplier")
+	down := flag.Float64("down", 1, "resolution downscale multiplier, values above 100 scales by the width in pixels")
 	music := flag.Bool("music", false, "64kbps stereo audio (he-aac v1)")
 	voice := flag.Bool("voice", false, "16kbps mono audio (he-aac v1)")
 	flag.Usage = func() {
@@ -131,7 +132,11 @@ func main() {
 	output = fmt.Sprintf("%gmb.%s.mp4", *size, output)
 
 	// resolution scale filter and 24fps
-	vfopt := fmt.Sprintf("scale=-2:(ceil(ih/%f/2)*2), fps=24", *down)
+	const FPS = 24
+	vfopt := fmt.Sprintf("scale=-2:(ceil(ih/%f/2)*2), fps=%d", *down, FPS)
+	if *down >= 100 {
+		vfopt = fmt.Sprintf("scale=(ceil(%f/2)*2):-2, fps=%d", *down, FPS)
+	}
 
 	pass1 := exec.Command(
 		"ffmpeg", "-y",
