@@ -133,9 +133,10 @@ func main() {
 	output := strings.Join(arr[0:len(arr)-1], ".")
 	output = fmt.Sprintf("%gmb.%s.mp4", *size, output)
 
-	// resolution scale filter and 24fps
 	const FPS = 24
 
+	// resolution scale filter and 24fps
+	// because h264 wants to be multiples of 2
 	vfparams := ":force_original_aspect_ratio=increase," +
 		"setsar=1," +
 		"crop=trunc(iw/2)*2:trunc(ih/2)*2," +
