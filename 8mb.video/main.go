@@ -138,7 +138,7 @@ func main() {
 
 	vfparams := ":force_original_aspect_ratio=increase," +
 		"setsar=1," +
-		"crop=(ceil(iw/2)*2):ceil(ih/2)*2," +
+		"crop=(trunc(iw/2)*2):trunc(ih/2)*2," +
 		"fps=%d"
 
 	vfopt := fmt.Sprintf(
