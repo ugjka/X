@@ -135,7 +135,7 @@ func main() {
 
 	const FPS = 24
 
-	// resolution scale filter and 24fps
+	// resolution scale filter and FPS
 	// because h264 wants to be multiples of 2
 	vfparams := ":force_original_aspect_ratio=increase," +
 		"setsar=1," +
