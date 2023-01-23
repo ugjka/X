@@ -143,14 +143,14 @@ func main() {
 		"fps=%d"
 
 	vfopt := fmt.Sprintf(
-		"scale=(ceil(iw/%f/2)*2):-2"+
+		"scale=iw/%f:-1"+
 			vfparams,
 		*down, FPS,
 	)
 
 	if *down >= 100 {
 		vfopt = fmt.Sprintf(
-			"scale=(ceil(%f/2)*2):-2"+
+			"scale=%f:-1"+
 				vfparams,
 			*down, FPS,
 		)
