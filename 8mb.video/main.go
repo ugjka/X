@@ -92,7 +92,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	const MEG = 8388.608
+	const MEG = 8388.608 // https://trac.ffmpeg.org/wiki/Encode/H.264#twopass
 	bitfloat := *size * MEG / seconds
 
 	// ffmpeg encodes stuff in chunks
