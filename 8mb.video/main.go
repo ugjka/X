@@ -53,6 +53,7 @@ func main() {
 		"values above 100 scales by the width in pixels")
 	music := flag.Bool("music", false, "64kbps stereo audio (he-aac v1)")
 	voice := flag.Bool("voice", false, "16kbps mono audio (he-aac v1)")
+
 	flag.Usage = func() {
 		fmt.Fprintf(os.Stderr, USAGE, path.Base(os.Args[0]))
 	}
