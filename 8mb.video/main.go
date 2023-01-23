@@ -39,6 +39,7 @@ Options:
 `
 
 func main() {
+	// check for dependencies
 	exes := []string{"ffmpeg", "ffprobe", "fdkaac"}
 	for _, exe := range exes {
 		if _, err := exec.LookPath(exe); err != nil {
@@ -96,6 +97,7 @@ func main() {
 
 	// ffmpeg encodes stuff in chunks
 	// we need to deal with possible bitrate overshoot
+	// guessed values
 	switch {
 	case bitfloat > 800:
 		// 256KB overshoot
@@ -110,6 +112,7 @@ func main() {
 
 	// muxing overhead (not exact science)
 	// based on observed values
+	// depends on fps and who knows...
 	overhead := 86.8 / bitfloat * 0.05785312
 	bitfloat -= bitfloat * overhead
 
@@ -134,6 +137,7 @@ func main() {
 	output := strings.Join(arr[0:len(arr)-1], ".")
 	output = fmt.Sprintf("%gmb.%s.mp4", *size, output)
 
+	// beware: changing this changes the muxing overhead
 	const FPS = 24
 
 	// resolution scale/crop filter and FPS
@@ -212,6 +216,7 @@ func main() {
 	pass2.Stdout = os.Stdout
 
 	// remove tmp files
+	// we don't use /tmp because Termux and Android
 	cleanup := func() {
 		os.Remove(file + "-0.log")
 		os.Remove(file + "-0.log.mbtree")
