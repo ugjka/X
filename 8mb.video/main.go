@@ -134,9 +134,24 @@ func main() {
 
 	// resolution scale filter and 24fps
 	const FPS = 24
-	vfopt := fmt.Sprintf("scale=(ceil(iw/%f/2)*2):-2, fps=%d", *down, FPS)
+
+	vfparams := ":force_original_aspect_ratio=increase," +
+		"setsar=1," +
+		"crop=(ceil(iw/2)*2):ceil(ih/2)*2," +
+		"fps=%d"
+
+	vfopt := fmt.Sprintf(
+		"scale=(ceil(iw/%f/2)*2):-2"+
+			vfparams,
+		*down, FPS,
+	)
+
 	if *down >= 100 {
-		vfopt = fmt.Sprintf("scale=(ceil(%f/2)*2):-2, fps=%d", *down, FPS)
+		vfopt = fmt.Sprintf(
+			"scale=(ceil(%f/2)*2):-2"+
+				vfparams,
+			*down, FPS,
+		)
 	}
 
 	pass1 := exec.Command(
