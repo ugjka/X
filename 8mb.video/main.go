@@ -125,7 +125,7 @@ func main() {
 	audioch := 2
 	profile := "29" // HE-AACv2
 	if *music {
-		abitrate *= 2
+		abitrate = 64
 		profile = "5" // HE-AACv1
 	}
 	if *voice {
