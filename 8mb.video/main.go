@@ -37,6 +37,8 @@ Options:
 	  64kbps stereo audio (he-aac v1)
 -voice
 	  16kbps mono audio (he-aac v1)
+-mute
+	  no audio
 -preset string
 	  h264 encode preset (default "slow")
 -size float
@@ -59,6 +61,7 @@ func main() {
 		"values above 100 scales by the width in pixels")
 	music := flag.Bool("music", false, "64kbps stereo audio (he-aac v1)")
 	voice := flag.Bool("voice", false, "16kbps mono audio (he-aac v1)")
+	mute := flag.Bool("mute", false, "no audio")
 
 	flag.Usage = func() {
 		fmt.Fprintf(os.Stderr, USAGE, path.Base(os.Args[0]))
@@ -162,74 +165,11 @@ func main() {
 		)
 	}
 
-	pass1 := exec.Command(
-		"ffmpeg", "-y",
-		"-i", file,
-		"-vf", vfopt,
-		"-c:v", "libx264",
-		"-preset", *preset,
-		"-b:v", fmt.Sprintf("%dk", vbitrate),
-		"-pass", "1",
-		"-passlogfile", file,
-		"-movflags", "+faststart",
-		"-an",
-		"-f", "null",
-		"/dev/null",
-	)
-	pass1.Stderr = os.Stderr
-	pass1.Stdout = os.Stdout
-
-	// we need to do this mumbo jumbo because fdk_aac encoder is disabled
-	// on 99.99% of ffmpeg installations (even on Arch)
-	// fdkaac standalone encoder is fine though
-	wavfile := exec.Command(
-		"ffmpeg", "-y",
-		"-i", file,
-		"-ar", "44100",
-		"-ac", fmt.Sprintf("%d", audioch),
-		file+".wav",
-	)
-	wavfile.Stderr = os.Stderr
-	wavfile.Stdout = os.Stdout
-
-	aacfile := exec.Command(
-		"fdkaac",
-		"-p", profile,
-		"-b", fmt.Sprintf("%d000", abitrate),
-		file+".wav",
-	)
-	aacfile.Stderr = os.Stderr
-	aacfile.Stdout = os.Stdout
-
-	pass2 := exec.Command(
-		"ffmpeg", "-y",
-		"-i", file,
-		"-i", file+".m4a",
-		"-vf", vfopt,
-		"-c:v", "libx264",
-		"-preset", *preset,
-		"-b:v", fmt.Sprintf("%dk", vbitrate),
-		"-pass", "2",
-		"-passlogfile", file,
-		"-movflags", "+faststart",
-		"-c:a", "copy",
-		"-map", "0:v:0",
-		"-map", "1:a:0",
-		output,
-	)
-	pass2.Stderr = os.Stderr
-	pass2.Stdout = os.Stdout
-
-	// remove tmp files
-	// we don't use /tmp because Termux and Android
-	cleanup := func() {
-		os.Remove(file + "-0.log")
-		os.Remove(file + "-0.log.mbtree")
-		os.Remove(file + "-0.log.temp")
-		os.Remove(file + "-0.log.mbtree.temp")
-		os.Remove(file + ".wav")
-		os.Remove(file + ".m4a")
-	}
+	// allocate cmds
+	pass1 := &exec.Cmd{}
+	wavfile := &exec.Cmd{}
+	aacfile := &exec.Cmd{}
+	pass2 := &exec.Cmd{}
 
 	// trap ctrl+c and kill
 	sig := make(chan os.Signal, 1)
@@ -250,29 +190,132 @@ func main() {
 		}
 	}()
 
+	// remove tmp files
+	// we don't use /tmp because Termux and Android
+	cleanup := func() {
+		os.Remove(file + "-0.log")
+		os.Remove(file + "-0.log.mbtree")
+		os.Remove(file + "-0.log.temp")
+		os.Remove(file + "-0.log.mbtree.temp")
+		os.Remove(file + ".wav")
+		os.Remove(file + ".m4a")
+	}
+
+	// we need to do this mumbo jumbo because fdk_aac encoder is disabled
+	// on 99.99% of ffmpeg installations (even on Arch)
+	// fdkaac standalone encoder is fine though
+	//
+	// wav decode
+	wavfile = exec.Command(
+		"ffmpeg", "-y",
+		"-i", file,
+		"-ar", "44100",
+		"-ac", fmt.Sprintf("%d", audioch),
+		file+".wav",
+	)
+	wavfile.Stderr = os.Stderr
+	wavfile.Stdout = os.Stdout
+	if !*mute {
+		err = wavfile.Run()
+		if err != nil {
+			if strings.Contains(err.Error(), "signal") {
+				cleanup()
+				os.Exit(1)
+			} else {
+				*mute = true
+			}
+
+		}
+	}
+
+	// aac encode
+	aacfile = exec.Command(
+		"fdkaac",
+		"-p", profile,
+		"-b", fmt.Sprintf("%d000", abitrate),
+		file+".wav",
+	)
+	aacfile.Stderr = os.Stderr
+	aacfile.Stdout = os.Stdout
+	if !*mute {
+		err = aacfile.Run()
+		if err != nil {
+			cleanup()
+			fmt.Fprintln(os.Stderr, err)
+			os.Exit(1)
+		}
+	}
+
+	if *mute {
+		vbitrate = int(bitfloat)
+	}
+
+	// pass 1
+	pass1 = exec.Command(
+		"ffmpeg", "-y",
+		"-i", file,
+		"-vf", vfopt,
+		"-c:v", "libx264",
+		"-preset", *preset,
+		"-b:v", fmt.Sprintf("%dk", vbitrate),
+		"-pass", "1",
+		"-passlogfile", file,
+		"-movflags", "+faststart",
+		"-an",
+		"-f", "null",
+		"/dev/null",
+	)
+	pass1.Stderr = os.Stderr
+	pass1.Stdout = os.Stdout
 	err = pass1.Run()
 	if err != nil {
 		cleanup()
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
-	err = wavfile.Run()
-	if err != nil {
-		cleanup()
-		fmt.Fprintln(os.Stderr, err)
-		os.Exit(1)
+
+	// pass 2
+	if !*mute {
+		pass2 = exec.Command(
+			"ffmpeg", "-y",
+			"-i", file,
+			"-i", file+".m4a",
+			"-vf", vfopt,
+			"-c:v", "libx264",
+			"-preset", *preset,
+			"-b:v", fmt.Sprintf("%dk", vbitrate),
+			"-pass", "2",
+			"-passlogfile", file,
+			"-movflags", "+faststart",
+			"-c:a", "copy",
+			"-map", "0:v:0",
+			"-map", "1:a:0",
+			output,
+		)
+	} else {
+		pass2 = exec.Command(
+			"ffmpeg", "-y",
+			"-i", file,
+			"-vf", vfopt,
+			"-c:v", "libx264",
+			"-preset", *preset,
+			"-b:v", fmt.Sprintf("%dk", vbitrate),
+			"-pass", "2",
+			"-passlogfile", file,
+			"-movflags", "+faststart",
+			"-c:a", "copy",
+			"-an",
+			output,
+		)
 	}
-	err = aacfile.Run()
-	if err != nil {
-		cleanup()
-		fmt.Fprintln(os.Stderr, err)
-		os.Exit(1)
-	}
+	pass2.Stderr = os.Stderr
+	pass2.Stdout = os.Stdout
 	err = pass2.Run()
 	if err != nil {
 		cleanup()
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
+	// remove the mess
 	cleanup()
 }
