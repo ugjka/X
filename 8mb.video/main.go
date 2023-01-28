@@ -166,9 +166,9 @@ func main() {
 	}
 
 	// allocate cmds
-	pass1 := &exec.Cmd{}
 	wavfile := &exec.Cmd{}
 	aacfile := &exec.Cmd{}
+	pass1 := &exec.Cmd{}
 	pass2 := &exec.Cmd{}
 
 	// trap ctrl+c and kill
