@@ -222,6 +222,7 @@ func main() {
 				cleanup()
 				os.Exit(1)
 			} else {
+				// if wav decode fails, there's no audio
 				*mute = true
 			}
 
@@ -275,7 +276,22 @@ func main() {
 	}
 
 	// pass 2
-	if !*mute {
+	if *mute {
+		pass2 = exec.Command(
+			"ffmpeg", "-y",
+			"-i", file,
+			"-vf", vfopt,
+			"-c:v", "libx264",
+			"-preset", *preset,
+			"-b:v", fmt.Sprintf("%dk", vbitrate),
+			"-pass", "2",
+			"-passlogfile", file,
+			"-movflags", "+faststart",
+			"-c:a", "copy",
+			"-an",
+			output,
+		)
+	} else {
 		pass2 = exec.Command(
 			"ffmpeg", "-y",
 			"-i", file,
@@ -290,21 +306,6 @@ func main() {
 			"-c:a", "copy",
 			"-map", "0:v:0",
 			"-map", "1:a:0",
-			output,
-		)
-	} else {
-		pass2 = exec.Command(
-			"ffmpeg", "-y",
-			"-i", file,
-			"-vf", vfopt,
-			"-c:v", "libx264",
-			"-preset", *preset,
-			"-b:v", fmt.Sprintf("%dk", vbitrate),
-			"-pass", "2",
-			"-passlogfile", file,
-			"-movflags", "+faststart",
-			"-c:a", "copy",
-			"-an",
 			output,
 		)
 	}
