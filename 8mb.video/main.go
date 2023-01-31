@@ -124,47 +124,6 @@ func main() {
 	overhead := 86.8 / bitfloat * 0.05785312
 	bitfloat -= bitfloat * overhead
 
-	abitrate := 32
-	audioch := 2
-	profile := "29" // HE-AACv2
-	if *music {
-		abitrate = 64
-		profile = "5" // HE-AACv1
-	}
-	if *voice {
-		abitrate = 16
-		audioch = 1
-		profile = "5" // HE-AACv1
-	}
-
-	// video bitrate
-	vbitrate := int(bitfloat) - abitrate
-
-	// construct output filename
-	arr := strings.Split(file, ".")
-	output := strings.Join(arr[0:len(arr)-1], ".")
-	output = fmt.Sprintf("%gmb.%s.mp4", *size, output)
-
-	// beware: changing this changes the muxing overhead
-	const FPS = 24
-
-	// resolution scale/crop filter and FPS
-	// because h264 wants to be multiples of 2
-	vfparams := ":force_original_aspect_ratio=increase," +
-		"setsar=1," +
-		"crop=trunc(iw/2)*2:trunc(ih/2)*2," +
-		"fps=%d"
-
-	vfopt := fmt.Sprintf(
-		"scale=iw/%f:-1"+vfparams, *down, FPS,
-	)
-
-	if *down >= 100 {
-		vfopt = fmt.Sprintf(
-			"scale=%f:-1"+vfparams, *down, FPS,
-		)
-	}
-
 	// allocate cmds
 	wavfile := &exec.Cmd{}
 	aacfile := &exec.Cmd{}
@@ -201,6 +160,19 @@ func main() {
 		os.Remove(file + ".m4a")
 	}
 
+	abitrate := 32
+	audioch := 2
+	profile := "29" // HE-AACv2
+	if *music {
+		abitrate = 64
+		profile = "5" // HE-AACv1
+	}
+	if *voice {
+		abitrate = 16
+		audioch = 1
+		profile = "5" // HE-AACv1
+	}
+
 	// we need to do this mumbo jumbo because fdk_aac encoder is disabled
 	// on 99.99% of ffmpeg installations (even on Arch)
 	// fdkaac standalone encoder is fine though
@@ -228,7 +200,6 @@ func main() {
 
 		}
 	}
-
 	// aac encode
 	aacfile = exec.Command(
 		"fdkaac",
@@ -247,8 +218,35 @@ func main() {
 		}
 	}
 
+	// video bitrate
+	vbitrate := int(bitfloat) - abitrate
 	if *mute {
 		vbitrate = int(bitfloat)
+	}
+
+	// construct output filename
+	arr := strings.Split(file, ".")
+	output := strings.Join(arr[0:len(arr)-1], ".")
+	output = fmt.Sprintf("%gmb.%s.mp4", *size, output)
+
+	// beware: changing this changes the muxing overhead
+	const FPS = 24
+
+	// resolution scale/crop filter and FPS
+	// because h264 wants to be multiples of 2
+	vfparams := ":force_original_aspect_ratio=increase," +
+		"setsar=1," +
+		"crop=trunc(iw/2)*2:trunc(ih/2)*2," +
+		"fps=%d"
+
+	vfopt := fmt.Sprintf(
+		"scale=iw/%f:-1"+vfparams, *down, FPS,
+	)
+
+	if *down >= 100 {
+		vfopt = fmt.Sprintf(
+			"scale=%f:-1"+vfparams, *down, FPS,
+		)
 	}
 
 	// pass 1
