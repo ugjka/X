@@ -190,6 +190,7 @@ func main() {
 	if !*mute {
 		err = wavfile.Run()
 		if err != nil {
+			// catch kill signals
 			if strings.Contains(err.Error(), "signal") {
 				cleanup()
 				os.Exit(1)
