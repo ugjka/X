@@ -9,6 +9,10 @@
 //
 // To build this you need the Go compiler:
 // go build -o 8mb.video main.go
+//
+// Caveats:
+// ffmpeg doesn't like hi-res square still image videos (youtube music stuff),
+// the encoder will overshoot the bitrate by a huge margin
 package main
 
 import (
