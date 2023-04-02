@@ -12,7 +12,8 @@
 //
 // Caveats:
 // ffmpeg doesn't like hi-res square still image videos (youtube music stuff),
-// the encoder will overshoot the bitrate by a huge margin
+// the encoder will overshoot the bitrate by a huge margin in such case
+// to work around you may try "-down 512"
 package main
 
 import (
