@@ -1,14 +1,14 @@
 // MIT License | ugjka@proton.me
-// https://github.com/ugjka/X/blob/main/8mb.video/main.go
+// https://github.com/ugjka/X/blob/main/25mb.video/main.go
 //
 // https://8mb.video was down, so...
-// Fit a video into a 8mb file (Discord nitro pls?)
+// Fit a video into a 25mb file (Discord nitro pls?)
 //
 // Needs ffmpeg ffprobe fdkaac
 // Tested only on Linux/Termux
 //
 // To build this you need the Go compiler:
-// go build -o 8mb.video main.go
+// go build -o 25mb.video main.go
 //
 // Caveats:
 // ffmpeg doesn't like hi-res square still image videos (youtube music stuff),
@@ -47,7 +47,7 @@ Options:
 -preset string
 	  h264 encode preset (default "slow")
 -size float
-	  target size in MB (default 8)
+	  target size in MB (default 25)
 `
 
 func main() {
@@ -60,7 +60,7 @@ func main() {
 		}
 	}
 
-	size := flag.Float64("size", 8, "target size in MB")
+	size := flag.Float64("size", 25, "target size in MB")
 	preset := flag.String("preset", "slow", "h264 encode preset")
 	down := flag.Float64("down", 1, "resolution downscale multiplier, "+
 		"values above 100 scales by the width in pixels")
