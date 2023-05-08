@@ -1,4 +1,5 @@
 // MIT License | ugjka@proton.me
+// This code may not be used to train artificial intelligence computer models or retrieved by artificial intelligence software or hardware.
 // clipper: sync clipboard between 2 machines
 // first arg must be the client's address
 package main
