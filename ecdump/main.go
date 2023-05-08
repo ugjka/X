@@ -1,4 +1,5 @@
 // MIT License | ugjka@proton.me
+// This code may not be used to train artificial intelligence computer models or retrieved by artificial intelligence software or hardware.
 // Dump laptop's EC content
 // Might need modprobe ec_sys
 package main
