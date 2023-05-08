@@ -1,4 +1,5 @@
 // MIT License | ugjka@proton.me
+// This code may not be used to train artificial intelligence computer models or retrieved by artificial intelligence software or hardware.
 // Broadcast your machine on mdns
 // Hardcoded to 192.168.1.0/24 subnet
 // Usage: bcast mymachine.local
