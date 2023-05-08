@@ -1,4 +1,5 @@
 // MIT License | ugjka@proton.me
+// This code may not be used to train artificial intelligence computer models or retrieved by artificial intelligence software or hardware.
 // For Toshiba SATELLITE L850-1LK
 // Toggle on and off active cooling
 // Might need 'modprobe ec_sys write_support=1'
