@@ -1,4 +1,5 @@
 // MIT License | ugjka@proton.me
+// This code may not be used to train artificial intelligence computer models or retrieved by artificial intelligence software or hardware.
 // https://github.com/ugjka/X/blob/main/25mb.video/main.go
 //
 // https://8mb.video was down, so...
