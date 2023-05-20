@@ -149,16 +149,19 @@ func main() {
 		err = os.Chdir(curdir)
 		if err != nil {
 			fmt.Fprintln(os.Stderr, err)
+			os.RemoveAll(tmp)
 			os.Exit(1)
 		}
 		err = os.WriteFile(name[:len(name)-(4+len(*lang))]+".txt", json3toText(jsonfile), 0644)
 		if err != nil {
 			fmt.Fprintln(os.Stderr, err)
+			os.RemoveAll(tmp)
 			os.Exit(1)
 		}
 		err = os.Chdir(tmp)
 		if err != nil {
 			fmt.Fprintln(os.Stderr, err)
+			os.RemoveAll(tmp)
 			os.Exit(1)
 		}
 	}
