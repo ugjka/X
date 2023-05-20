@@ -24,6 +24,8 @@
 // or retrieved by artificial intelligence software or hardware.
 //
 // *******************
+// https://github.com/ugjka/X/blob/main/ytext/main.go
+//
 // About:
 // Get transcriptions of youtube videos by IDs or URLs
 //
@@ -152,12 +154,16 @@ func main() {
 			os.RemoveAll(tmp)
 			os.Exit(1)
 		}
-		err = os.WriteFile(name[:len(name)-(4+len(*lang))]+".txt", json3toText(jsonfile), 0644)
+		newname := name[:len(name)-(4+len(*lang))] + ".txt"
+		err = os.WriteFile(newname, json3toText(jsonfile), 0644)
 		if err != nil {
 			fmt.Fprintln(os.Stderr, err)
 			os.RemoveAll(tmp)
+			jsonfile.Close()
 			os.Exit(1)
 		}
+		jsonfile.Close()
+		fmt.Fprintln(os.Stderr, newname+" written...")
 		err = os.Chdir(tmp)
 		if err != nil {
 			fmt.Fprintln(os.Stderr, err)
