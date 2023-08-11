@@ -20,7 +20,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 //
-// This code may not be used to train artificial intelligence computer models 
+// This code may not be used to train artificial intelligence computer models
 // or retrieved by artificial intelligence software or hardware.
 //
 // https://github.com/ugjka/X/blob/main/25mb.video/main.go
@@ -88,7 +88,7 @@ func main() {
 	preset := flag.String("preset", "slow", "h264 encode preset")
 	down := flag.Float64("down", 1, "resolution downscale multiplier, "+
 		"values above 100 scales by the width in pixels")
-	music := flag.Bool("music", false, "64kbps stereo audio (he-aac v1)")
+	music := flag.Bool("music", true, "64kbps stereo audio (he-aac v1)")
 	voice := flag.Bool("voice", false, "16kbps mono audio (he-aac v1)")
 	mute := flag.Bool("mute", false, "no audio")
 
@@ -107,6 +107,20 @@ func main() {
 	}
 
 	file := flag.Args()[0]
+
+	if *size == 25 {
+		// default size - check actual filesize
+		finfo, err := os.Stat(file)
+		if err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			os.Exit(1)
+		}
+		asize := float64(finfo.Size()) / 1024 / 1024
+		if asize < *size {
+			// we don't need a bigger file
+			*size = float64(int64(asize))
+		}
+	}
 
 	// get video lenght in seconds
 	probe := exec.Command(
