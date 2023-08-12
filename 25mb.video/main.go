@@ -108,20 +108,6 @@ func main() {
 
 	file := flag.Args()[0]
 
-	if *size == 25 {
-		// default size - check actual filesize
-		finfo, err := os.Stat(file)
-		if err != nil {
-			fmt.Fprintln(os.Stderr, err)
-			os.Exit(1)
-		}
-		asize := float64(finfo.Size()) / 1024 / 1024
-		if asize < *size {
-			// we don't need a bigger file
-			*size = float64(int64(asize))
-		}
-	}
-
 	// get video lenght in seconds
 	probe := exec.Command(
 		"ffprobe",
