@@ -63,7 +63,7 @@ Options:
 	  resolution downscale multiplier (default 1)
 	  values above 100 scales by the width in pixels
 -music
-	  64kbps stereo audio (he-aac v1)
+	  64kbps stereo audio (he-aac v1) (default)
 -voice
 	  16kbps mono audio (he-aac v1)
 -mute
