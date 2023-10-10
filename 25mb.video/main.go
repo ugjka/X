@@ -56,7 +56,7 @@ import (
 const USAGE = `Usage: %s [OPTIONS] [FILE]
 
 Compress a video to target size
-(default audio: 32kbps stereo he-aac v2)
+(default audio: 64kbps stereo he-aac v1)
 
 Options:
 -down float
