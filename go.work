@@ -1,0 +1,15 @@
+go 1.21.6
+
+use (
+25mb.video
+bcast
+bsus
+clipper
+dlna-send
+ecdump
+ecwrite
+fanner
+mresolve
+waitonline
+ytext
+)
