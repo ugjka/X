@@ -20,12 +20,12 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 //
-// This code may not be used to train artificial intelligence computer models 
+// This code may not be used to train artificial intelligence computer models
 // or retrieved by artificial intelligence software or hardware.
 //
 // Broadcast your machine on mdns
 // Hardcoded to 192.168.1.0/24 subnet
-// Usage: bcast mymachine.local
+// Usage: bcast mymachine
 package main
 
 import (
@@ -35,9 +35,7 @@ import (
 	"net"
 	"os"
 	"os/exec"
-	"os/signal"
 	"strings"
-	"syscall"
 	"time"
 
 	"github.com/ugjka/mdns"
@@ -46,7 +44,7 @@ import (
 func main() {
 	out, err := exec.Command("pidof", os.Args[0]).CombinedOutput()
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("%v, %s", err, out)
 	}
 	arr := bytes.Split(out, []byte(" "))
 	if len(arr) > 1 {
@@ -66,43 +64,29 @@ func main() {
 	}
 	publish(zone, fmt.Sprintf("%s.local. %d IN A %s", hostname, TTL, ip))
 	publish(zone, fmt.Sprintf("%s.in-addr.arpa. %d IN PTR %s.local.", revip, TTL, hostname))
-	go func() {
-		for {
-			time.Sleep(time.Second * 10)
-			newIP, err := getIP()
-			if err != nil {
-				continue
-			}
-			if newIP != ip {
-				zone.Shutdown()
-				var err error
-				zone, err = mdns.New(true, false)
-				if err != nil {
-					log.Fatal(err)
-				}
-				ip = newIP
-				revip = reverse(ip)
-				publish(zone, fmt.Sprintf("%s.local. %d IN A %s", hostname, TTL, ip))
-				publish(zone, fmt.Sprintf("%s.in-addr.arpa. %d IN PTR %s.local.", revip, TTL, hostname))
-			}
+	for {
+		time.Sleep(time.Second * 10)
+		newIP, err := getIP()
+		if err != nil {
+			continue
 		}
-	}()
-	sig := make(chan os.Signal, 1)
-	signal.Notify(sig, syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
-	<-sig
-	log.Println("Shutting down.")
+		if newIP != ip {
+			zone.Shutdown()
+			var err error
+			zone, err = mdns.New(true, false)
+			if err != nil {
+				log.Fatal(err)
+			}
+			ip = newIP
+			revip = reverse(ip)
+			publish(zone, fmt.Sprintf("%s.local. %d IN A %s", hostname, TTL, ip))
+			publish(zone, fmt.Sprintf("%s.in-addr.arpa. %d IN PTR %s.local.", revip, TTL, hostname))
+		}
+	}
 }
 
 func publish(zone *mdns.Zone, rr string) {
 	err := zone.Publish(rr)
-	if err != nil {
-		log.Println(err)
-		os.Exit(1)
-	}
-}
-
-func unpublish(zone *mdns.Zone, rr string) {
-	err := zone.Unpublish(rr)
 	if err != nil {
 		log.Println(err)
 		os.Exit(1)
