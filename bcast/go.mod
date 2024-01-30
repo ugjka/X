@@ -1,10 +1,15 @@
 module bcast
 
-go 1.15
+go 1.18
 
-//replace github.com/ugjka/mdns => /home/ugjka/gomod/mdns
+//replace github.com/ugjka/mdns => ../../mdns
+
+require github.com/ugjka/mdns v0.0.24
 
 require (
 	github.com/miekg/dns v1.1.58 // indirect
-	github.com/ugjka/mdns v0.0.22
+	golang.org/x/mod v0.14.0 // indirect
+	golang.org/x/net v0.20.0 // indirect
+	golang.org/x/sys v0.16.0 // indirect
+	golang.org/x/tools v0.17.0 // indirect
 )

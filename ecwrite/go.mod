@@ -1,3 +1,3 @@
 module ecwrite
 
-go 1.13
+go 1.18
