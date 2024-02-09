@@ -62,8 +62,8 @@ Options:
 -down float
 	  resolution downscale multiplier (default 1)
 	  values above 100 scales by the width in pixels
--music
-	  64kbps stereo audio (he-aac v1) (default)
+-nomusic
+	  32kbps stereo audio (he-aac v2)
 -voice
 	  16kbps mono audio (he-aac v1)
 -mute
@@ -88,7 +88,7 @@ func main() {
 	preset := flag.String("preset", "slow", "h264 encode preset")
 	down := flag.Float64("down", 1, "resolution downscale multiplier, "+
 		"values above 100 scales by the width in pixels")
-	music := flag.Bool("music", true, "64kbps stereo audio (he-aac v1)")
+	nomusic := flag.Bool("nomusic", false, "32kbps stereo audio (he-aac v2)")
 	voice := flag.Bool("voice", false, "16kbps mono audio (he-aac v1)")
 	mute := flag.Bool("mute", false, "no audio")
 
@@ -189,12 +189,12 @@ func main() {
 		os.Remove(file + ".m4a")
 	}
 
-	abitrate := 32
+	abitrate := 64
 	audioch := 2
-	profile := "29" // HE-AACv2
-	if *music {
-		abitrate = 64
-		profile = "5" // HE-AACv1
+	profile := "5" // HE-AACv1
+	if *nomusic {
+		abitrate = 32
+		profile = "29" // HE-AACv2
 	}
 	if *voice {
 		abitrate = 16
