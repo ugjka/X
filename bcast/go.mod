@@ -3,8 +3,9 @@ module bcast
 go 1.18
 
 //replace github.com/ugjka/mdns => ../../mdns
+//replace github.com/miekg/dns => /home/ugjka/git/dns
 
-require github.com/ugjka/mdns v0.0.24
+require github.com/ugjka/mdns v0.0.25
 
 require (
 	github.com/miekg/dns v1.1.58 // indirect
