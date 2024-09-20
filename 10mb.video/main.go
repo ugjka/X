@@ -88,7 +88,7 @@ func main() {
 	preset := flag.String("preset", "slow", "h264 encode preset")
 	down := flag.Float64("down", 1, "resolution downscale multiplier, "+
 		"values above 100 scales by the width in pixels")
-	music := flag.Bool("music", false, "32kbps stereo audio (he-aac v2)")
+	music := flag.Bool("music", false, "64kbps stereo audio (he-aac v1)")
 	voice := flag.Bool("voice", false, "16kbps mono audio (he-aac v1)")
 	mute := flag.Bool("mute", false, "no audio")
 
