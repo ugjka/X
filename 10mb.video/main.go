@@ -69,7 +69,7 @@ Options:
 -mute
 	  no audio
 -preset string
-	  h264 encode preset (default "veryslow")
+	  h264 encode preset (default "slow")
 -size float
 	  target size in MB (default 25)
 `
