@@ -56,20 +56,20 @@ import (
 const USAGE = `Usage: %s [OPTIONS] [FILE]
 
 Compress a video to target size
-(default audio: 32kbps stereo he-aac v2)
+(default audio: 32kbps stereo opus)
 
 Options:
 -down float
 	  resolution downscale multiplier (default 1)
 	  values above 100 scales by the width in pixels
 -music
-	  64kbps stereo audio (he-aac v1)
+	  64kbps stereo audio opus
 -voice
-	  16kbps mono audio (he-aac v1)
+	  16kbps mono audio opus
 -mute
 	  no audio
 -preset string
-	  h264 encode preset (default "slow")
+	  h264 encode preset (default "6")
 -size float
 	  target size in MB (default 25)
 `
@@ -85,7 +85,7 @@ func main() {
 	}
 
 	size := flag.Float64("size", 10, "target size in MB")
-	preset := flag.String("preset", "slow", "h264 encode preset")
+	preset := flag.String("preset", "6", "encode preset 0-8")
 	down := flag.Float64("down", 1, "resolution downscale multiplier, "+
 		"values above 100 scales by the width in pixels")
 	music := flag.Bool("music", false, "64kbps stereo audio (he-aac v1)")
@@ -155,7 +155,7 @@ func main() {
 
 	// allocate cmds
 	wavfile := &exec.Cmd{}
-	aacfile := &exec.Cmd{}
+	opusfile := &exec.Cmd{}
 	pass1 := &exec.Cmd{}
 	pass2 := &exec.Cmd{}
 
@@ -170,8 +170,8 @@ func main() {
 		if wavfile.Process != nil {
 			wavfile.Process.Kill()
 		}
-		if aacfile.Process != nil {
-			aacfile.Process.Kill()
+		if opusfile.Process != nil {
+			opusfile.Process.Kill()
 		}
 		if pass2.Process != nil {
 			pass2.Process.Kill()
@@ -186,26 +186,19 @@ func main() {
 		os.Remove(file + "-0.log.temp")
 		os.Remove(file + "-0.log.mbtree.temp")
 		os.Remove(file + ".wav")
-		os.Remove(file + ".m4a")
+		os.Remove(file + ".opus")
 	}
 
 	abitrate := 32
 	audioch := 2
-	profile := "29" // HE-AACv2
 	if *music {
 		abitrate = 64
-		profile = "5" // HE-AACv1
 	}
 	if *voice {
 		abitrate = 16
 		audioch = 1
-		profile = "5" // HE-AACv1
 	}
 
-	// we need to do this mumbo jumbo because fdk_aac encoder is disabled
-	// on 99.99% of ffmpeg installations (even on Arch)
-	// fdkaac standalone encoder is fine though
-	//
 	// wav decode
 	wavfile = exec.Command(
 		"ffmpeg", "-y",
@@ -230,17 +223,18 @@ func main() {
 
 		}
 	}
-	// aac encode
-	aacfile = exec.Command(
-		"fdkaac",
-		"-p", profile,
-		"-b", fmt.Sprintf("%d000", abitrate),
-		file+".wav",
+	// opus encode
+	opusfile = exec.Command(
+		"ffmpeg",
+		"-i", file+".wav",
+		"-c:a", "libopus",
+		"-b:a", fmt.Sprintf("%dk", abitrate),
+		file+".opus",
 	)
-	aacfile.Stderr = os.Stderr
-	aacfile.Stdout = os.Stdout
+	opusfile.Stderr = os.Stderr
+	opusfile.Stdout = os.Stdout
 	if !*mute {
-		err = aacfile.Run()
+		err = opusfile.Run()
 		if err != nil {
 			cleanup()
 			fmt.Fprintln(os.Stderr, err)
@@ -257,7 +251,7 @@ func main() {
 	// construct output filename
 	arr := strings.Split(file, ".")
 	output := strings.Join(arr[0:len(arr)-1], ".")
-	output = fmt.Sprintf("%gmb.%s.mp4", *size, output)
+	output = fmt.Sprintf("%gmb.%s.webm", *size, output)
 
 	// beware: changing this changes the muxing overhead
 	const FPS = 24
@@ -284,12 +278,11 @@ func main() {
 		"ffmpeg", "-y",
 		"-i", file,
 		"-vf", vfopt,
-		"-c:v", "libx264",
+		"-c:v", "libsvtav1",
 		"-preset", *preset,
 		"-b:v", fmt.Sprintf("%dk", vbitrate),
 		"-pass", "1",
 		"-passlogfile", file,
-		"-movflags", "+faststart",
 		"-an",
 		"-f", "null",
 		"/dev/null",
@@ -309,12 +302,11 @@ func main() {
 			"ffmpeg", "-y",
 			"-i", file,
 			"-vf", vfopt,
-			"-c:v", "libx264",
+			"-c:v", "libsvtav1",
 			"-preset", *preset,
 			"-b:v", fmt.Sprintf("%dk", vbitrate),
 			"-pass", "2",
 			"-passlogfile", file,
-			"-movflags", "+faststart",
 			"-c:a", "copy",
 			"-an",
 			output,
@@ -323,14 +315,13 @@ func main() {
 		pass2 = exec.Command(
 			"ffmpeg", "-y",
 			"-i", file,
-			"-i", file+".m4a",
+			"-i", file+".opus",
 			"-vf", vfopt,
-			"-c:v", "libx264",
+			"-c:v", "libsvtav1",
 			"-preset", *preset,
 			"-b:v", fmt.Sprintf("%dk", vbitrate),
 			"-pass", "2",
 			"-passlogfile", file,
-			"-movflags", "+faststart",
 			"-c:a", "copy",
 			"-map", "0:v:0",
 			"-map", "1:a:0",
