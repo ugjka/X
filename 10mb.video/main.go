@@ -69,7 +69,7 @@ Options:
 -mute
 	  no audio
 -preset string
-	  h264 encode preset (default "6")
+	  av1 encode speed preset (default "5")
 -size float
 	  target size in MB (default 25)
 `
@@ -85,7 +85,7 @@ func main() {
 	}
 
 	size := flag.Float64("size", 10, "target size in MB")
-	preset := flag.String("preset", "6", "encode preset 0-8")
+	preset := flag.String("preset", "5", "encode preset 0-8")
 	down := flag.Float64("down", 1, "resolution downscale multiplier, "+
 		"values above 100 scales by the width in pixels")
 	music := flag.Bool("music", false, "64kbps stereo audio (he-aac v1)")
