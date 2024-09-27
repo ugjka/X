@@ -56,16 +56,16 @@ import (
 const USAGE = `Usage: %s [OPTIONS] [FILE]
 
 Compress a video to target size
-(default audio: 32kbps stereo opus)
+(default audio: 48kbps stereo (opus))
 
 Options:
 -down float
 	  resolution downscale multiplier (default 1)
 	  values above 100 scales by the width in pixels
 -music
-	  64kbps stereo audio opus
+	  64kbps stereo audio (opus)
 -voice
-	  16kbps mono audio opus
+	  24kbps mono audio (opus)
 -mute
 	  no audio
 -size float
@@ -85,8 +85,8 @@ func main() {
 	size := flag.Float64("size", 10, "target size in MB")
 	down := flag.Float64("down", 1, "resolution downscale multiplier, "+
 		"values above 100 scales by the width in pixels")
-	music := flag.Bool("music", false, "64kbps stereo audio (he-aac v1)")
-	voice := flag.Bool("voice", false, "16kbps mono audio (he-aac v1)")
+	music := flag.Bool("music", false, "64kbps stereo audio (opus)")
+	voice := flag.Bool("voice", false, "24kbps mono audio (opus)")
 	mute := flag.Bool("mute", false, "no audio")
 
 	flag.Usage = func() {
@@ -186,13 +186,13 @@ func main() {
 		os.Remove(file + ".opus")
 	}
 
-	abitrate := 32
+	abitrate := 48
 	audioch := 2
 	if *music {
 		abitrate = 64
 	}
 	if *voice {
-		abitrate = 16
+		abitrate = 24
 		audioch = 1
 	}
 
