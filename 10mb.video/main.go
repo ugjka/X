@@ -85,7 +85,7 @@ func main() {
 	}
 
 	size := flag.Float64("size", 10, "target size in MB")
-	preset := flag.String("preset", "slow", "h264 encode preset")
+	//preset := flag.String("preset", "slow", "h264 encode preset")
 	down := flag.Float64("down", 1, "resolution downscale multiplier, "+
 		"values above 100 scales by the width in pixels")
 	music := flag.Bool("music", false, "64kbps stereo audio (he-aac v1)")
@@ -270,22 +270,26 @@ func main() {
 		"fps=%d"
 
 	vfopt := fmt.Sprintf(
-		"scale=iw/%f:-1"+vfparams, *down, FPS,
+		"scale_vaapi=iw/%f:-1"+vfparams, *down, FPS,
 	)
 
 	if *down >= 100 {
 		vfopt = fmt.Sprintf(
-			"scale=%f:-1"+vfparams, *down, FPS,
+			"scale_vaapi=%f:-1"+vfparams, *down, FPS,
 		)
 	}
 
+	vfopt = "format=nv12,hwupload," + vfopt
+
 	// pass 1
 	pass1 = exec.Command(
-		"ffmpeg", "-y",
+		"ffmpeg",
+		"-hwaccel", "vaapi", "-hwaccel_device", "/dev/dri/renderD128",
+		"-y",
 		"-i", file,
 		"-vf", vfopt,
-		"-c:v", "libx264",
-		"-preset", *preset,
+		"-c:v", "h264_vaapi",
+		//"-preset", *preset,
 		"-b:v", fmt.Sprintf("%dk", vbitrate),
 		"-pass", "1",
 		"-passlogfile", file,
@@ -306,11 +310,12 @@ func main() {
 	// pass 2
 	if *mute {
 		pass2 = exec.Command(
-			"ffmpeg", "-y",
+			"ffmpeg",
+			"-hwaccel", "vaapi", "-hwaccel_device", "/dev/dri/renderD128", "-y",
 			"-i", file,
 			"-vf", vfopt,
-			"-c:v", "libx264",
-			"-preset", *preset,
+			"-c:v", "h264_vaapi",
+			//"-preset", *preset,
 			"-b:v", fmt.Sprintf("%dk", vbitrate),
 			"-pass", "2",
 			"-passlogfile", file,
@@ -321,12 +326,13 @@ func main() {
 		)
 	} else {
 		pass2 = exec.Command(
-			"ffmpeg", "-y",
+			"ffmpeg",
+			"-hwaccel", "vaapi", "-hwaccel_device", "/dev/dri/renderD128", "-y",
 			"-i", file,
 			"-i", file+".m4a",
 			"-vf", vfopt,
-			"-c:v", "libx264",
-			"-preset", *preset,
+			"-c:v", "h264_vaapi",
+			//"-preset", *preset,
 			"-b:v", fmt.Sprintf("%dk", vbitrate),
 			"-pass", "2",
 			"-passlogfile", file,
