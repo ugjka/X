@@ -1,3 +1,3 @@
-module a10mb.video
+module v10mb.video
 
 go 1.18
