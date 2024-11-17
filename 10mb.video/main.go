@@ -283,6 +283,7 @@ func main() {
 	pass1 = exec.Command(
 		"ffmpeg", "-y",
 		"-i", file,
+		"-fs", "10M",
 		"-vf", vfopt,
 		"-c:v", "libx264",
 		"-preset", *preset,
@@ -308,6 +309,7 @@ func main() {
 		pass2 = exec.Command(
 			"ffmpeg", "-y",
 			"-i", file,
+			"-fs", "10M",
 			"-vf", vfopt,
 			"-c:v", "libx264",
 			"-preset", *preset,
@@ -324,6 +326,7 @@ func main() {
 			"ffmpeg", "-y",
 			"-i", file,
 			"-i", file+".m4a",
+			"-fs", "10M",
 			"-vf", vfopt,
 			"-c:v", "libx264",
 			"-preset", *preset,
